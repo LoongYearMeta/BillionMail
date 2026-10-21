@@ -428,7 +428,7 @@ func FreshRecords(ctx context.Context, domain ...string) {
 
 	for _, d := range domains {
 		// goroutine for each record type
-		wg.Add(7) // total of 7 record types
+		wg.Add(8) // total of 8 record types
 
 		// retrieve A record
 		go func(d string) {
@@ -438,6 +438,17 @@ func FreshRecords(ctx context.Context, domain ...string) {
 				g.Log().Error(ctx, "Failed to get A record for domain %s: %v", d, err)
 			} else {
 				public.SetCache(buildCacheKey(d, "A"), dr, cacheSeconds)
+			}
+		}(d)
+
+		// retrieve webmail A record
+		go func(d string) {
+			defer wg.Done()
+			dr, err := GetWebmailRecord(d, true)
+			if err != nil {
+				g.Log().Error(ctx, "Failed to get webmail record for domain %s: %v", d, err)
+			} else {
+				public.SetCache(buildCacheKey(d, "WEBMAIL"), dr, cacheSeconds)
 			}
 		}(d)
 
@@ -790,6 +801,23 @@ func GetARecord(domain string, validateImmediate bool, dedicatedIP string) (reco
 	return
 }
 
+// GetWebmailRecord retrieves the A record for webmail.<domain>. It always points
+// at the server IP: the webmail is served by core, not by a dedicated sending IP.
+func GetWebmailRecord(domain string, validateImmediate bool) (record v1.DNSRecord, err error) {
+	record, err = GetARecord(domain, false, "")
+	if err != nil {
+		return
+	}
+
+	record.Host = public.FormatWebmail(domain)
+
+	if validateImmediate {
+		record.Valid = ValidateARecord(record)
+	}
+
+	return
+}
+
 // GetPTRRecord retrieves the PTR record for a given domain.
 func GetPTRRecord(domain string, validateImmediate bool) (record v1.DNSRecord, err error) {
 	serverIP, err := public.GetServerIP()
@@ -882,6 +910,17 @@ func GetRecordsInCache(domain string, dedicatedIP string) (records v1.DNSRecords
 		}
 	} else {
 		records.DMARC, _ = GetDMARCRecord(domain, false)
+	}
+
+	// Get webmail record from cache
+	webmailRecord := public.GetCache(buildCacheKey(domain, "WEBMAIL"))
+
+	if webmailRecord != nil {
+		if v, ok := webmailRecord.(v1.DNSRecord); ok {
+			records.Webmail = v
+		}
+	} else {
+		records.Webmail, _ = GetWebmailRecord(domain, false)
 	}
 
 	// Get PTR record from cache

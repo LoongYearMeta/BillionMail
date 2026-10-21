@@ -41,7 +41,8 @@ services:
             - redis
 
     rspamd-billionmail:
-      image: billionmail/rspamd:1.2
+      image: ghcr.io/loongyearmeta/mail-rspamd:1.0.0
+      build: ./Dockerfiles/rspamd
       hostname: rspamd
       depends_on:
         - redis-billionmail
@@ -62,7 +63,8 @@ services:
             - rspamd
 
     dovecot-billionmail:
-      image: billionmail/dovecot:1.6
+      image: ghcr.io/loongyearmeta/mail-dovecot:1.0.0
+      build: ./Dockerfiles/dovecot
       hostname: dovecot
       depends_on:
         - pgsql-billionmail
@@ -104,7 +106,8 @@ services:
             - dovecot
 
     postfix-billionmail:
-      image: billionmail/postfix:1.6
+      image: ghcr.io/loongyearmeta/mail-postfix:1.0.0
+      build: ./Dockerfiles/postfix
       hostname: postfix
       depends_on:
         pgsql-billionmail:
@@ -142,30 +145,16 @@ services:
 
 
     webmail-billionmail:
-      image: roundcube/roundcubemail:1.6.11-fpm-alpine
-      hostname: roundcube
+      image: ghcr.io/loongyearmeta/mail-webmail:alps-2bfdd59
+      build: ./Dockerfiles/webmail
+      hostname: webmail
       depends_on:
-        - pgsql-billionmail
         - dovecot-billionmail
         - postfix-billionmail
-      volumes:
-        - ./webmail-data:/var/www/html
-        - ./conf/webmail/mime.types:/var/roundcube/config/mime.types
-        - ./conf/webmail:/var/roundcube/config
-        - ./conf/php:/usr/local/etc
-        - ./php-sock/:/var/run/
       environment:
         - TZ=${TZ}
-        - ROUNDCUBEMAIL_DB_TYPE=pgsql
-        - ROUNDCUBEMAIL_DB_HOST=pgsql
-        - ROUNDCUBEMAIL_DB_NAME=${DBNAME}
-        - ROUNDCUBEMAIL_DB_USER=${DBUSER}
-        - ROUNDCUBEMAIL_DB_PASSWORD=${DBPASS}
-        - ROUNDCUBEMAIL_DEFAULT_HOST=dovecot
-        - ROUNDCUBEMAIL_DEFAULT_PORT=${IMAP_PORT:-143}
-        - ROUNDCUBEMAIL_SMTP_SERVER=postfix
-        - ROUNDCUBEMAIL_SMTP_PORT=${SMTP_PORT:-25}
-        - ROUNDCUBEMAIL_REQUEST_PATH=/roundcube
+        - IPV4_NETWORK=${IPV4_NETWORK:-172.66.1}
+        - WEBMAIL_LOGIN_KEY=${WEBMAIL_LOGIN_KEY:-}
       restart: always
       networks:
         billionmail-network:
@@ -173,7 +162,7 @@ services:
             - webmail
 
     core-billionmail:
-      image: billionmail/core:4.9.3
+      image: ghcr.io/loongyearmeta/mail-core:1.0.0
       hostname: core-manage
       depends_on:
         - pgsql-billionmail
@@ -184,9 +173,7 @@ services:
         - ./conf/core/fail2ban/jail.d:/etc/fail2ban/jail.d
         - ./logs/fail2ban:/var/log/fail2ban
         - ./postgresql-socket:/opt/billionmail/postgresql-socket
-        - ./php-sock:/opt/billionmail/php-sock
         - ./rspamd-data:/opt/billionmail/rspamd-data
-        - ./webmail-data:/opt/billionmail/webmail-data
         - ./.env:/opt/billionmail/.env
         - ./conf:/opt/billionmail/conf
         - ./logs:/opt/billionmail/logs

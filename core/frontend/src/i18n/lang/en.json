@@ -934,7 +934,8 @@
 				"mxPriority": "MX Priority"
 			},
 			"step1": {
-				"title": "Step 1: Add A Record"
+				"title": "Step 1: Add A Records",
+				"description": "The webmail record serves https://webmail.<domain>/. Its certificate is issued automatically once the record points to this server."
 			},
 			"step2": {
 				"title": "Step 2: Add MX Record",

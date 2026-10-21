@@ -848,7 +848,8 @@
 				"mxPriority": "MX 優先度"
 			},
 			"step1": {
-				"title": "ステップ1: A レコードを追加"
+				"title": "ステップ1: A レコードを追加",
+				"description": "webmail レコードは Web メール https://webmail.<ドメイン>/ 用です。このサーバーを指すと証明書が自動で発行されます。"
 			},
 			"step2": {
 				"title": "ステップ2: MX レコードを追加",

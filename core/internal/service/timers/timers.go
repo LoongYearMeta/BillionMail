@@ -52,10 +52,12 @@ func Start(ctx context.Context) (err error) {
 		}
 
 		domains.FreshRecords(ctx)
+		domains.EnsureWebmailCerts(ctx)
 	})
-	// Check DNS Records every 5 minutes
+	// Check DNS Records every 5 minutes, then issue webmail certificates whose DNS became ready
 	gtimer.Add(5*time.Minute, func() {
 		domains.FreshRecords(ctx)
+		domains.EnsureWebmailCerts(ctx)
 	})
 
 	// Start maillog analysis

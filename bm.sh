@@ -86,7 +86,7 @@ GET_SERVICE_NAME() {
 
     if [[ "${SERVICE}" == "core" ]] || [[ "${SERVICE}" == "manage" ]]; then
         #echo "Getting the "${SERVICE}" service..."
-        SERVICE_NAME=$(${DOCKER_COMPOSE} ps -a --format " {{.Service}} {{.ID}} {{.Image}}" |grep "/core:" | awk '{print $1}' )
+        SERVICE_NAME=$(${DOCKER_COMPOSE} ps -a --format " {{.Service}} {{.ID}} {{.Image}}" |grep "/mail-core:" | awk '{print $1}' )
     
     elif [[ "${SERVICE}" == "postfix" ]] || [[ "${SERVICE}" == "postfix-billionmail" ]]; then
         SERVICE_NAME="postfix-billionmail"
@@ -126,16 +126,16 @@ GET_CONTAINER_ID() {
     fi
 
     if [[ "${CONTAINER}" == "core" ]] || [[ "${CONTAINER}" == "manage" ]]; then
-        CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/core:" | awk '{print $1}' )
+        CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/mail-core:" | awk '{print $1}' )
     
     elif [[ ""${CONTAINER}"" == "postfix" ]] || [[ ""${CONTAINER}"" == "postfix-billionmail" ]]; then
-        CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/postfix:" | awk '{print $1}' )
+        CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/mail-postfix:" | awk '{print $1}' )
     
     elif [[ ""${CONTAINER}"" == "dovecot" ]] || [[ ""${CONTAINER}"" == "dovecot-billionmail" ]]; then
-        CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/dovecot:" | awk '{print $1}' )
+        CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/mail-dovecot:" | awk '{print $1}' )
     
     elif [[ ""${CONTAINER}"" == "rspamd" ]] || [[ ""${CONTAINER}"" == "rspamd-billionmail" ]]; then
-        CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/rspamd:" | awk '{print $1}' )
+        CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/mail-rspamd:" | awk '{print $1}' )
     
     elif [[ ""${CONTAINER}"" == "pgsql" ]] || [[ ""${CONTAINER}"" == "postgres" ]] || [[ ""${CONTAINER}"" == "pgsql-billionmail" ]]; then
         CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "postgres:" | awk '{print $1}' )
@@ -144,7 +144,7 @@ GET_CONTAINER_ID() {
         CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "redis:" | awk '{print $1}' )
 
     elif [[ ""${CONTAINER}"" == "webmail" ]] || [[ ""${CONTAINER}"" == "roundcube" ]] || [[ ""${CONTAINER}"" == "webmail-billionmail" ]]; then
-        CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "roundcubemail:" | awk '{print $1}' )
+        CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/mail-webmail:" | awk '{print $1}' )
     
     else
         echo "Please use: core|postfix|dovecot|rspamd|pgsql|redis|webmail"
@@ -608,7 +608,7 @@ MODIFY_HTTP_SSL_PORT() {
 
     sleep 3
     # Find the container ID of the core image in the current project and rebuild the container
-    # CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/core:" | awk '{print $1}' )
+    # CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/mail-core:" | awk '{print $1}' )
     CONTAINER="core"
     GET_CONTAINER_ID ${CONTAINER}
     if [ "${CONTAINER_ID}" ]; then
@@ -669,7 +669,7 @@ MODIFY_HTTPS_PORT() {
     echo -e "The BillionMail management port has been modified to: ${NEW_PORT} \n Rebuild the container, please wait..."
     sleep 3
     # Find the container ID of the core image in the current project and rebuild the container
-    # CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/core:" | awk '{print $1}' )
+    # CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/mail-core:" | awk '{print $1}' )
     CONTAINER="core"
     GET_CONTAINER_ID ${CONTAINER}
     if [ "${CONTAINER_ID}" ]; then
@@ -772,7 +772,7 @@ MODIFY_ADMIN_USERNAME() {
     echo -e "BillionMail administrator username has been updated. Restarting container, please wait..."
     sleep 3
     # Find the container ID of the core image in the current project and rebuild the container
-    # CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/core:" | awk '{print $1}' )
+    # CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/mail-core:" | awk '{print $1}' )
     CONTAINER="core"
     GET_CONTAINER_ID ${CONTAINER}
     if [ "${CONTAINER_ID}" ]; then
@@ -816,7 +816,7 @@ MODIFY_ADMIN_PASSWORD() {
     echo -e "BillionMail administrator password has been updated. Restarting container, please wait..."
     sleep 3
     # Find the container ID of the core image in the current project and rebuild the container
-    #CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/core:" | awk '{print $1}' )
+    #CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/mail-core:" | awk '{print $1}' )
     CONTAINER="core"
     GET_CONTAINER_ID ${CONTAINER}
     if [ "${CONTAINER_ID}" ]; then
@@ -861,7 +861,7 @@ MODIFY_SAFE_ENTRANCE() {
     echo -e "BillionMail security entrance path has been updated. Restarting container, please wait..."
     sleep 3
     # Find the container ID of the core image in the current project and rebuild the container
-    # CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/core:" | awk '{print $1}' )
+    # CONTAINER_ID=$(${DOCKER_COMPOSE} ps -a --format "{{.ID}} {{.Image}}" |grep "/mail-core:" | awk '{print $1}' )
     CONTAINER="core"
     GET_CONTAINER_ID ${CONTAINER}
     if [ "${CONTAINER_ID}" ]; then
@@ -1094,7 +1094,7 @@ CLEAR_OLD_IMAGE() {
     # Extract complete image names (including tags) defined in compose file
     # echo "Extracting billionmail images from docker-compose.yml..."
     # COMPOSE_IMAGES=$(grep -oP 'image:\s*\K[^"\s]+' docker-compose.yml | sort -u)
-    COMPOSE_IMAGES=$(grep -oP 'image:\s*\K(?:billionmail|ghcr\.io/aapanel)[^"\s]+' docker-compose.yml | sort -u)
+    COMPOSE_IMAGES=$(grep -oP 'image:\s*\Kghcr\.io/loongyearmeta/mail-[^"\s]+' docker-compose.yml | sort -u)
 
     # Check if any images were found
     if [ -z "${COMPOSE_IMAGES}" ]; then

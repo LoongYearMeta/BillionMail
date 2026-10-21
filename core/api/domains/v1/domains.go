@@ -22,6 +22,7 @@ type DNSRecords struct {
 	MX        DNSRecord `json:"mx"           dc:"MX record"`
 	A         DNSRecord `json:"a"            dc:"A record"`
 	PTR       DNSRecord `json:"ptr"          dc:"PTR record"`
+	Webmail   DNSRecord `json:"webmail"      dc:"Webmail A record, webmail.<domain> to this server"`
 }
 
 type CertInfo struct {

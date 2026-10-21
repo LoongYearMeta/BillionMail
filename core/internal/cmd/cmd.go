@@ -27,12 +27,12 @@ import (
 	docker "billionmail-core/internal/service/dockerapi"
 	"billionmail-core/internal/service/maillog_stat"
 	"billionmail-core/internal/service/middlewares"
-	"billionmail-core/internal/service/phpfpm"
 	"billionmail-core/internal/service/public"
 	rbac2 "billionmail-core/internal/service/rbac"
 	"billionmail-core/internal/service/redis_initialization"
 	"billionmail-core/internal/service/rspamd"
 	"billionmail-core/internal/service/timers"
+	"billionmail-core/internal/service/webmail"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -248,6 +248,16 @@ var (
 							return
 						}
 
+						// Old webmail links are shared with mailbox users, not only admins
+						if r.URL.Path == "/roundcube" || strings.HasPrefix(r.URL.Path, "/roundcube/") {
+							return
+						}
+
+						// Let's Encrypt validation servers never visit the safe path
+						if strings.HasPrefix(r.URL.Path, "/.well-known/acme-challenge/") {
+							return
+						}
+
 						if r.IsFileRequest() {
 							return
 						}
@@ -341,24 +351,14 @@ var (
 
 			// SPA fallback
 
-			// Add PHP-FPM middleware
-			s.BindMiddleware("/roundcube/*any", func(r *ghttp.Request) {
-				if r.Method == "POST" && strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-					// Get and store the request body
-					r.GetBody()
-					r.Middleware.Next()
+			// Webmail moved from /roundcube to webmail.<domain>, keep old links working
+			s.BindHandler("/roundcube/*any", func(r *ghttp.Request) {
+				if target, ok := webmail.RedirectURL(r.Host); ok {
+					r.Response.RedirectTo(target, http.StatusFound)
 					return
 				}
-				r.Middleware.Next()
+				r.Response.WriteHeader(http.StatusNotFound)
 			})
-
-			// Binding PHP-FPM handler
-			s.BindHandler("/roundcube/*any", phpfpm.PHPFpmHandlerFactory(phpfpm.PHPFpmHandlerConfig{
-				Network: "unix",
-				Addr:    consts.PHP_FPM_SOCK_PATH,
-				Root:    consts.ROUNDCUBE_ROOT_PATH_IN_CONTAINER,
-				Static:  consts.ROUNDCUBE_ROOT_PATH,
-			}))
 
 			// Proxy 60880 port for ACME challenge
 			ACMEChallengeProxy := httputil.NewSingleHostReverseProxy(&url.URL{
@@ -459,48 +459,53 @@ var (
 			defaultCrtPair, _ := tls.LoadX509KeyPair(public.AbsPath(consts.SSL_PATH, "cert.pem"), public.AbsPath(consts.SSL_PATH, "key.pem"))
 			crtMap := make(map[string]*tls.Certificate)
 			crtMapMutex := sync.RWMutex{}
-			s.EnableHTTPS(public.AbsPath(consts.SSL_PATH, "cert.pem"), public.AbsPath(consts.SSL_PATH, "key.pem"), &tls.Config{
-				GetCertificate: func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
-					domain := info.ServerName
+			getCertificate := func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
+				domain := info.ServerName
 
-					crtMapMutex.RLock()
-					if crtPair, ok := crtMap[domain]; ok {
-						crtMapMutex.RUnlock()
-						return crtPair, nil
-					}
+				if crt, ok := webmail.Certificate(domain); ok {
+					return crt, nil
+				}
+
+				crtMapMutex.RLock()
+				if crtPair, ok := crtMap[domain]; ok {
 					crtMapMutex.RUnlock()
+					return crtPair, nil
+				}
+				crtMapMutex.RUnlock()
 
-					if exists, _ := g.DB().Model("domain").Where("a_record", public.FormatMX(domain)).Exist(); !exists {
-						return &defaultCrtPair, nil
-					}
+				if exists, _ := g.DB().Model("domain").Where("a_record", public.FormatMX(domain)).Exist(); !exists {
+					return &defaultCrtPair, nil
+				}
 
-					g.Log().Debug(ctx, "Get TLS certificate for domain", domain)
+				g.Log().Debug(ctx, "Get TLS certificate for domain", domain)
 
-					crtMapMutex.Lock()
-					defer crtMapMutex.Unlock()
+				crtMapMutex.Lock()
+				defer crtMapMutex.Unlock()
 
-					if crt, ok := crtMap[domain]; ok {
-						return crt, nil
-					}
+				if crt, ok := crtMap[domain]; ok {
+					return crt, nil
+				}
 
-					crtPath := public.AbsPath(consts.SSL_PATH, public.FormatMX(domain), "fullchain.pem")
-					keyPath := public.AbsPath(consts.SSL_PATH, public.FormatMX(domain), "privkey.pem")
+				crtPath := public.AbsPath(consts.SSL_PATH, public.FormatMX(domain), "fullchain.pem")
+				keyPath := public.AbsPath(consts.SSL_PATH, public.FormatMX(domain), "privkey.pem")
 
-					if !public.FileExists(crtPath) || !public.FileExists(keyPath) {
-						return &defaultCrtPair, nil
-					}
+				if !public.FileExists(crtPath) || !public.FileExists(keyPath) {
+					return &defaultCrtPair, nil
+				}
 
-					crtPair, err := tls.LoadX509KeyPair(crtPath, keyPath)
+				crtPair, err := tls.LoadX509KeyPair(crtPath, keyPath)
 
-					if err != nil {
-						g.Log().Warning(ctx, "Failed to load TLS certificate for domain", domain, err)
-						return &defaultCrtPair, nil
-					}
+				if err != nil {
+					g.Log().Warning(ctx, "Failed to load TLS certificate for domain", domain, err)
+					return &defaultCrtPair, nil
+				}
 
-					crtMap[domain] = &crtPair
+				crtMap[domain] = &crtPair
 
-					return &crtPair, nil
-				},
+				return &crtPair, nil
+			}
+			s.EnableHTTPS(public.AbsPath(consts.SSL_PATH, "cert.pem"), public.AbsPath(consts.SSL_PATH, "key.pem"), &tls.Config{
+				GetCertificate: getCertificate,
 			})
 
 			// attempt add http port
@@ -536,6 +541,17 @@ var (
    <script src="https://cdn.jsdelivr.net/npm/openapi-ui-dist@latest/lib/openapi-ui.umd.js"></script>
  </body>
 </html>`)
+
+			// Route webmail.<domain> to the webmail before any console routing,
+			// except ACME challenges, which issue the webmail certificates
+			webmailHandler := webmail.Handler()
+			s.SetHandler(func(w http.ResponseWriter, r *http.Request) {
+				if webmail.IsWebmailHost(r.Host) && !strings.HasPrefix(r.URL.Path, "/.well-known/acme-challenge/") {
+					webmailHandler.ServeHTTP(w, r)
+					return
+				}
+				s.ServeHTTP(w, r)
+			})
 
 			s.Run()
 

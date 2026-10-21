@@ -93,7 +93,7 @@ Password: `billionmail`
 
 ## WebMail
 
-BillionMail has integrated **RoundCube**, you can access WebMail via `/roundcube/`.
+BillionMail ships with the [alps](https://github.com/migadu/alps) webmail at `https://webmail.<your-domain>/` for every mail domain. Point the `webmail` DNS record (shown with the domain's DNS records) at the server; the certificate is then issued automatically. Old `/roundcube/` links redirect there.
 
 ## Why BillionMail?
 

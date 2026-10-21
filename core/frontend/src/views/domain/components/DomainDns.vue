@@ -4,6 +4,7 @@
 			<n-data-table size="small" class="mb-20px" :data="statusData" :columns="statusColumns">
 			</n-data-table>
 			<div class="record-title">{{ t('domain.dns.step1.title') }}</div>
+			<div class="record-desc">{{ t('domain.dns.step1.description') }}</div>
 			<n-table size="small" class="mb-24px">
 				<thead>
 					<tr>
@@ -17,6 +18,11 @@
 						<td>A</td>
 						<td>{{ aHost }}</td>
 						<td>{{ aValue }}</td>
+					</tr>
+					<tr>
+						<td>A</td>
+						<td>{{ webmailHost }}</td>
+						<td>{{ webmailValue }}</td>
 					</tr>
 				</tbody>
 			</n-table>
@@ -146,7 +152,7 @@ const statusData = ref<MailDomain[]>([])
 
 const getRecordValue = (record: string, key: 'host' | 'value' = 'value') => {
 	if (statusData.value.length > 0) {
-		return statusData.value[0].dns_records[record][key]
+		return statusData.value[0].dns_records[record]?.[key] ?? ''
 	}
 	return ''
 }
@@ -165,6 +171,14 @@ const aValue = computed(() => {
 
 const aHost = computed(() => {
 	return getRecordValue('a', 'host')
+})
+
+const webmailValue = computed(() => {
+	return getRecordValue('webmail')
+})
+
+const webmailHost = computed(() => {
+	return getRecordValue('webmail', 'host')
 })
 
 const mxValue = computed(() => {
@@ -250,6 +264,14 @@ const statusColumns = ref<DataTableColumns<MailDomain>>([
 		render: row => {
 			const ptr = row.dns_records.ptr
 			return <StatusCol status={ptr?.valid || false}></StatusCol>
+		},
+	},
+	{
+		key: 'webmail',
+		title: 'Webmail',
+		render: row => {
+			const webmail = row.dns_records.webmail
+			return <StatusCol status={webmail?.valid || false}></StatusCol>
 		},
 	},
 ])
