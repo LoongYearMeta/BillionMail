@@ -32,20 +32,6 @@ const columns = ref<DataTableColumns<MailProvider>>([
 		},
 	},
 	{
-		key: 'open_rate',
-		title: t('overview.provider.open'),
-		render: row => {
-			return getRate(row.open_rate)
-		},
-	},
-	{
-		key: 'click_rate',
-		title: t('overview.provider.click'),
-		render: row => {
-			return getRate(row.click_rate)
-		},
-	},
-	{
 		key: 'bounce_rate',
 		title: t('overview.provider.bounce'),
 		render: row => {

@@ -27,7 +27,7 @@ prepare_core() {
     local ctx=$1
     mkdir -p "${ctx}/core"
     cp Dockerfiles/core/* "${ctx}/"
-    cp -r core/manifest core/languages core/public core/resource core/template "${ctx}/core/"
+    cp -r core/manifest core/languages core/public core/resource "${ctx}/core/"
     echo ">> Building core binary"
     docker run --rm -v "${ROOT}/core":/src -w /src -v "${ctx}/core":/out \
         -v billionmail-gomod:/go/pkg/mod -v billionmail-gocache:/root/.cache/go-build \

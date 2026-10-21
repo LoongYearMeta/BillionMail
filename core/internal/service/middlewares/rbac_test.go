@@ -28,19 +28,12 @@ func TestPathToRouteInfo(t *testing.T) {
 		{"mail_boxes", "/api/mail_boxes/list", "mail_boxes", "read", "mail_boxes"},
 		{"overview", "/api/overview/list", "overview", "read", "overview"},
 		{"dockerapi", "/api/dockerapi/list", "dockerapi", "read", "dockerapi"},
-		{"contact", "/api/contact/list", "contact", "read", "contact"},
-		{"email_template", "/api/email_template/list", "email_template", "read", "email_template"},
-		{"batch_mail", "/api/batch_mail/list", "batch_mail", "read", "batch_mail"},
 		{"files", "/api/files/list", "files", "read", "files"},
-		{"abnormal_recipient", "/api/abnormal_recipient/list", "abnormal_recipient", "read", "abnormal_recipient"},
 		{"languages", "/api/languages/list", "languages", "read", "languages"},
 		{"mail_services", "/api/mail_services/list", "mail_services", "read", "mail_services"},
 		{"relay", "/api/relay/list", "relay", "read", "relay"},
 		{"settings", "/api/settings/list", "settings", "read", "settings"},
-		{"subscribe_list", "/api/subscribe_list/list", "subscribe_list", "read", "subscribe_list"},
 		{"operation_log", "/api/operation_log/list", "operation_log", "read", "operation_log"},
-		{"tags", "/api/tags/list", "tags", "read", "tags"},
-		{"video_outreach", "/api/video_outreach/list", "video_outreach", "read", "video_outreach"},
 
 		// Non-standard actions pass through
 		{"custom action", "/api/domains/sync", "domains", "sync", "domains"},
@@ -51,7 +44,7 @@ func TestPathToRouteInfo(t *testing.T) {
 		{"root only", "/", "", "", ""},
 		{"no module match", "/api/unknown/list", "", "read", "unknown"},
 		{"module as suffix", "/api/domains", "domains", "", ""},
-		{"nested path", "/api/batch_mail/something/extra", "batch_mail", "something", "batch_mail"},
+		{"nested path", "/api/mail_boxes/something/extra", "mail_boxes", "something", "mail_boxes"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

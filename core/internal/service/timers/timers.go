@@ -1,8 +1,6 @@
 package timers
 
 import (
-	"billionmail-core/internal/service/abnormal_recipient"
-	"billionmail-core/internal/service/batch_mail"
 	"billionmail-core/internal/service/domains"
 	"billionmail-core/internal/service/fail2ban"
 	"billionmail-core/internal/service/log_maintenance"
@@ -10,8 +8,6 @@ import (
 	"billionmail-core/internal/service/mail_service"
 	"billionmail-core/internal/service/maillog_stat"
 	"billionmail-core/internal/service/relay"
-	"billionmail-core/internal/service/video_gen"
-	"billionmail-core/internal/service/warmup"
 	"context"
 	"time"
 
@@ -85,17 +81,6 @@ func Start(ctx context.Context) (err error) {
 		mail_service.FixDovecotSSLConfig(ctx)
 	})
 
-	// ========== Mail task processing: one executor per task ==========
-	gtimer.Add(5*time.Second, func() {
-		batch_mail.ProcessEmailTasks(ctx)
-	})
-
-	// Idle actuators are cleaned every 10 minutes
-	gtimer.Add(10*time.Minute, func() {
-		batch_mail.CleanupIdleExecutors()
-		g.Log().Debug(ctx, "Idle task executors cleanup completed")
-	})
-
 	// Test the smtp relay configuration connection status
 	gtimer.AddOnce(5*time.Second, func() {
 		relay.UpdateRelayStatus(ctx)
@@ -113,28 +98,8 @@ func Start(ctx context.Context) (err error) {
 		domains.AutoRenewSSL(ctx)
 	})
 
-	gtimer.Add(1*time.Minute, func() {
-		//gtimer.Add(5*time.Second, func() {
-		batch_mail.ProcessApiMailQueueWithLock(ctx)
-	})
-
-	// Sender IP warmup and mail provider warmup
-	gtimer.Add(time.Hour, func() {
-		warmup.SenderIpWarmup().PeriodicTask(ctx)
-		warmup.SenderIpMailProvider().PeriodicTaskForProviders(ctx)
-	})
-
 	// fail2ban access logs detection
 	gtimer.AddOnce(800*time.Millisecond, fail2ban.NewAccessLogDetection().Start)
-
-	gtimer.Add(30*time.Minute, func() {
-		abnormal_recipient.AbnormalRecipientAutoStat(context.Background())
-	})
-
-	// Regularly update the success and failure data of marketing tasks
-	gtimer.Add(1*time.Minute, func() {
-		batch_mail.UpdateTaskJoinMailstat(ctx)
-	})
 
 	// First sync of SMTP relay configurations to Postfix after refactoring
 	gtimer.AddOnce(3*time.Second, func() {
@@ -170,11 +135,6 @@ func Start(ctx context.Context) (err error) {
 
 	gtimer.AddOnce(1*time.Minute, func() {
 		relay.EnsurePostfixConfExists(ctx)
-	})
-
-	// Video generation pipeline orchestrator
-	gtimer.Add(30*time.Second, func() {
-		video_gen.ProcessVideoJobs(ctx)
 	})
 
 	// Check the domain name blacklist

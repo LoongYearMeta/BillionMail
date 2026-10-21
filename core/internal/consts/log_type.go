@@ -7,43 +7,29 @@ import (
 
 var (
 	LOGTYPE = struct {
-		Task              string
-		Template          string
-		SendAPI           string
-		ContactsGroup     string
-		Contacts          string
-		Domain            string
-		Mailboxes         string
-		SMTP              string
-		Settings          string
-		Service           string
-		BCC               string
-		MailForward       string
-		AbnormalRecipient string
-		DockerApi         string
-		Language          string
-		Login             string
-		PostfixQueue      string
-		Tag    			  string
+		Domain       string
+		Mailboxes    string
+		SMTP         string
+		Settings     string
+		Service      string
+		BCC          string
+		MailForward  string
+		DockerApi    string
+		Language     string
+		Login        string
+		PostfixQueue string
 	}{
-		Task:              "Email Marketing Task",
-		Template:          "Email Template",
-		SendAPI:           "Send API",
-		ContactsGroup:     "Contacts-Group",
-		Contacts:          "Contacts-Subscribers",
-		Domain:            "Domain",
-		Mailboxes:         "Mailboxes",
-		SMTP:              "SMTP Relay",
-		Settings:          "Settings-Common",
-		Service:           "Settings-Service",
-		BCC:               "Settings-BCC",
-		MailForward:       "Settings-Mail Forward",
-		AbnormalRecipient: "Abnormal Recipient",
-		DockerApi:         "Docker Api",
-		Language:          "Language",
-		Login:             "Login",
-		PostfixQueue:      "Postfix Queue",
-		Tag:      		   "Contacts-Tag",
+		Domain:       "Domain",
+		Mailboxes:    "Mailboxes",
+		SMTP:         "SMTP Relay",
+		Settings:     "Settings-Common",
+		Service:      "Settings-Service",
+		BCC:          "Settings-BCC",
+		MailForward:  "Settings-Mail Forward",
+		DockerApi:    "Docker Api",
+		Language:     "Language",
+		Login:        "Login",
+		PostfixQueue: "Postfix Queue",
 	}
 )
 var (

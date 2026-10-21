@@ -43,7 +43,7 @@ func (o *Overview) filterAndPrepareTimeSection(startTime, endTime int64) (int64,
 }
 
 // buildBaseQuery build basic query
-func (o *Overview) buildBaseQuery(campaignID int64, domain string, startTime, endTime int64) *gdb.Model {
+func (o *Overview) buildBaseQuery(domain string, startTime, endTime int64) *gdb.Model {
 	subQuery := "SELECT * FROM mailstat_send_mails WHERE true"
 
 	if startTime > 0 {
@@ -57,12 +57,6 @@ func (o *Overview) buildBaseQuery(campaignID int64, domain string, startTime, en
 	query := g.DB().Model("(" + subQuery + ") sm")
 	query.LeftJoin("mailstat_senders s", "sm.postfix_message_id=s.postfix_message_id")
 	query.Where("s.postfix_message_id is not null")
-
-	if campaignID > 0 {
-		query.InnerJoin("mailstat_message_ids mi", "sm.postfix_message_id=mi.postfix_message_id")
-		query.InnerJoin(fmt.Sprintf("(SELECT message_id FROM recipient_info WHERE task_id = %d) r", campaignID), "mi.message_id=r.message_id")
-		// query.Where("r.task_id = ?", campaignID)
-	}
 
 	if domain != "" {
 		query.Where("s.sender LIKE ?", "%@"+domain)
@@ -80,48 +74,28 @@ func (o *Overview) buildBaseQuery(campaignID int64, domain string, startTime, en
 }
 
 // Overview the maillog
-func (o *Overview) Overview(campaignID int64, domain string, startTime, endTime int64) map[string]interface{} {
+func (o *Overview) Overview(domain string, startTime, endTime int64) map[string]interface{} {
 	startTime, endTime = o.filterAndPrepareTimeSection(startTime, endTime)
 
 	return map[string]interface{}{
-		"dashboard":         o.overviewDashboard(campaignID, domain, startTime, endTime),
-		"mail_providers":    o.overviewProviders(campaignID, domain, startTime, endTime),
-		"send_mail_chart":   o.chartSendMail(campaignID, domain, startTime, endTime),
-		"bounce_rate_chart": o.chartBounceRate(campaignID, domain, startTime, endTime),
-		"open_rate_chart":   o.chartOpenRate(campaignID, domain, startTime, endTime),
-		"click_rate_chart":  o.chartClickRate(campaignID, domain, startTime, endTime),
+		"dashboard":         o.overviewDashboard(domain, startTime, endTime),
+		"mail_providers":    o.overviewProviders(domain, startTime, endTime),
+		"send_mail_chart":   o.chartSendMail(domain, startTime, endTime),
+		"bounce_rate_chart": o.chartBounceRate(domain, startTime, endTime),
 	}
 }
 
 // overviewDashboard dashboard data
-func (o *Overview) overviewDashboard(campaignID int64, domain string, startTime, endTime int64) map[string]interface{} {
-	query := o.buildBaseQuery(campaignID, domain, startTime, endTime)
-
-	query.LeftJoin(`LATERAL(
-	SELECT id
-	FROM mailstat_opened
-	WHERE sm.postfix_message_id = postfix_message_id
-	LIMIT 1
-) as o`, "true")
-
-	query.LeftJoin(`LATERAL(
-	SELECT id
-	FROM mailstat_clicked
-	WHERE sm.postfix_message_id = postfix_message_id
-	LIMIT 1
-) as c`, "true")
+func (o *Overview) overviewDashboard(domain string, startTime, endTime int64) map[string]interface{} {
+	query := o.buildBaseQuery(domain, startTime, endTime)
 
 	query.Fields("count(*) as sends")
 	query.Fields("coalesce(sum(case when status='sent' and dsn like '2.%' then 1 else 0 end), 0) as delivered")
-	query.Fields("count(o.id) as opened")
-	query.Fields("count(c.id) as clicked")
 	query.Fields("coalesce(sum(case when status='bounced' then 1 else 0 end), 0) as bounced")
 
 	aggregate := map[string]interface{}{
 		"sends":         0,
 		"delivered":     0,
-		"opened":        0,
-		"clicked":       0,
 		"bounced":       0,
 		"delayed_queue": 0,
 	}
@@ -146,13 +120,6 @@ func (o *Overview) overviewDashboard(campaignID int64, domain string, startTime,
 		aggregate["delivery_rate"] = 0
 		aggregate["bounce_rate"] = 0
 	}
-	if aggregate["delivered"].(int) > 0 {
-		aggregate["open_rate"] = public.Round(float64(aggregate["opened"].(int))/float64(aggregate["delivered"].(int))*100, 2)
-		aggregate["click_rate"] = public.Round(float64(aggregate["clicked"].(int))/float64(aggregate["delivered"].(int))*100, 2)
-	} else {
-		aggregate["open_rate"] = 0
-		aggregate["click_rate"] = 0
-	}
 
 	// delayed_queue
 	aggregate["delayed_queue"] = 0
@@ -161,12 +128,6 @@ func (o *Overview) overviewDashboard(campaignID int64, domain string, startTime,
 		aggregate["delayed_queue"] = delayedCount
 	}
 
-	return aggregate
-}
-
-// OverviewDashboard dashboard data
-func (o *Overview) OverviewDashboard(campaignID int64, domain string, startTime, endTime int64) map[string]interface{} {
-	aggregate := o.overviewDashboard(campaignID, domain, startTime, endTime)
 	return aggregate
 }
 
@@ -216,30 +177,14 @@ func (o *Overview) getPostfixDeferredQueueCount(ctx context.Context) (int, error
 }
 
 // overviewProviders statistic mail provider
-func (o *Overview) overviewProviders(campaignID int64, domain string, startTime, endTime int64) []map[string]interface{} {
+func (o *Overview) overviewProviders(domain string, startTime, endTime int64) []map[string]interface{} {
 	startTime, endTime = o.filterAndPrepareTimeSection(startTime, endTime)
 
-	query := o.buildBaseQuery(campaignID, domain, startTime, endTime)
-
-	query.LeftJoin(`LATERAL(
-	SELECT id
-	FROM mailstat_opened
-	WHERE sm.postfix_message_id = postfix_message_id
-	LIMIT 1
-) as o`, "true")
-
-	query.LeftJoin(`LATERAL(
-	SELECT id
-	FROM mailstat_clicked
-	WHERE sm.postfix_message_id = postfix_message_id
-	LIMIT 1
-) as c`, "true")
+	query := o.buildBaseQuery(domain, startTime, endTime)
 
 	query.Fields("sm.mail_provider")
 	query.Fields("count(*) as sends")
 	query.Fields("coalesce(sum(case when status='sent' and dsn like '2.%' then 1 else 0 end), 0) as delivered")
-	query.Fields("count(o.id) as opened")
-	query.Fields("count(c.id) as clicked")
 	query.Fields("coalesce(sum(case when status='bounced' then 1 else 0 end), 0) as bounced")
 
 	query.Group("sm.mail_provider")
@@ -255,8 +200,6 @@ func (o *Overview) overviewProviders(campaignID int64, domain string, startTime,
 	aggregate := map[string]interface{}{
 		"sends":     0,
 		"delivered": 0,
-		"opened":    0,
-		"clicked":   0,
 		"bounced":   0,
 	}
 
@@ -284,13 +227,9 @@ func (o *Overview) overviewProviders(campaignID int64, domain string, startTime,
 		if item["sends"].(int) > 0 {
 			item["delivery_rate"] = public.Round(float64(item["delivered"].(int))/float64(item["sends"].(int))*100, 2)
 			item["bounce_rate"] = public.Round(float64(item["bounced"].(int))/float64(item["sends"].(int))*100, 2)
-			item["open_rate"] = public.Round(float64(item["opened"].(int))/float64(item["sends"].(int))*100, 2)
-			item["click_rate"] = public.Round(float64(item["clicked"].(int))/float64(item["sends"].(int))*100, 2)
 		} else {
 			item["delivery_rate"] = 0
 			item["bounce_rate"] = 0
-			item["open_rate"] = 0
-			item["click_rate"] = 0
 		}
 		lst = append(lst, item)
 	}
@@ -423,10 +362,10 @@ func (o *Overview) fillChartDataMonthly(data []map[string]interface{}, fillItem 
 }
 
 // sendMailDashboard dashboard data for send mail
-func (o *Overview) sendMailDashboard(campaignID int64, domain string, startTime, endTime int64) map[string]interface{} {
+func (o *Overview) sendMailDashboard(domain string, startTime, endTime int64) map[string]interface{} {
 	startTime, endTime = o.filterAndPrepareTimeSection(startTime, endTime)
 
-	query := o.buildBaseQuery(campaignID, domain, startTime, endTime)
+	query := o.buildBaseQuery(domain, startTime, endTime)
 
 	query.Fields("count(*) as sends")
 	query.Fields("coalesce(sum(case when status='sent' and dsn like '2.%' then 1 else 0 end), 0) as delivered")
@@ -477,10 +416,10 @@ func (o *Overview) prepareChartData(startTime, endTime int64) (string, string) {
 	return columnType, xAxisField
 }
 
-func (o *Overview) chartSendMail(campaignID int64, domain string, startTime, endTime int64) map[string]interface{} {
+func (o *Overview) chartSendMail(domain string, startTime, endTime int64) map[string]interface{} {
 	startTime, endTime = o.filterAndPrepareTimeSection(startTime, endTime)
 
-	query := o.buildBaseQuery(campaignID, domain, startTime, endTime)
+	query := o.buildBaseQuery(domain, startTime, endTime)
 
 	columnType, xAxisField := o.prepareChartData(startTime, endTime)
 
@@ -511,15 +450,15 @@ func (o *Overview) chartSendMail(campaignID int64, domain string, startTime, end
 
 	return map[string]interface{}{
 		"column_type": columnType,
-		"dashboard":   o.sendMailDashboard(campaignID, domain, startTime, endTime),
+		"dashboard":   o.sendMailDashboard(domain, startTime, endTime),
 		"data":        o.fillChartData(results, fillItem, columnType, "x", startTime, endTime),
 	}
 }
 
-func (o *Overview) chartBounceRate(campaignID int64, domain string, startTime, endTime int64) map[string]interface{} {
+func (o *Overview) chartBounceRate(domain string, startTime, endTime int64) map[string]interface{} {
 	startTime, endTime = o.filterAndPrepareTimeSection(startTime, endTime)
 
-	query := o.buildBaseQuery(campaignID, domain, startTime, endTime)
+	query := o.buildBaseQuery(domain, startTime, endTime)
 
 	columnType, xAxisField := o.prepareChartData(startTime, endTime)
 
@@ -550,98 +489,11 @@ func (o *Overview) chartBounceRate(campaignID int64, domain string, startTime, e
 	}
 }
 
-func (o *Overview) chartOpenRate(campaignID int64, domain string, startTime, endTime int64) map[string]interface{} {
-	startTime, endTime = o.filterAndPrepareTimeSection(startTime, endTime)
-
-	query := o.buildBaseQuery(campaignID, domain, startTime, endTime)
-
-	columnType, xAxisField := o.prepareChartData(startTime, endTime)
-
-	query.LeftJoin(`LATERAL(
-	SELECT id
-	FROM mailstat_opened
-	WHERE sm.postfix_message_id = postfix_message_id
-	LIMIT 1
-) as o`, "true")
-
-	query.Fields(xAxisField)
-	query.Fields("case when coalesce(sum(case when status='sent' and dsn like '2.%' then 1 else 0 end), 0) > 0 then round(1.0 * count(o.id) / coalesce(sum(case when status='sent' and dsn like '2.%' then 1 else 0 end), 0) * 100, 2) else 0.0 end as open_rate")
-
-	query.Group("x")
-
-	rs, err := query.All()
-	if err != nil {
-		g.Log().Error(context.Background(), err)
-		return nil
-	}
-
-	results := make([]map[string]interface{}, 0, len(rs))
-	for _, item := range rs {
-		results = append(results, item.Map())
-	}
-
-	fillItem := map[string]interface{}{
-		"open_rate": 0.0,
-	}
-
-	return map[string]interface{}{
-		"column_type": columnType,
-		"data":        o.fillChartData(results, fillItem, columnType, "x", startTime, endTime),
-	}
-}
-
-func (o *Overview) chartClickRate(campaignID int64, domain string, startTime, endTime int64) map[string]interface{} {
-	startTime, endTime = o.filterAndPrepareTimeSection(startTime, endTime)
-
-	query := o.buildBaseQuery(campaignID, domain, startTime, endTime)
-
-	columnType, xAxisField := o.prepareChartData(startTime, endTime)
-
-	query.LeftJoin(`LATERAL(
-	SELECT id
-	FROM mailstat_opened
-	WHERE sm.postfix_message_id = postfix_message_id
-	LIMIT 1
-) as o`, "true")
-
-	query.LeftJoin(`LATERAL(
-	SELECT id
-	FROM mailstat_clicked
-	WHERE sm.postfix_message_id = postfix_message_id
-	LIMIT 1
-) as c`, "true")
-
-	query.Fields(xAxisField)
-	query.Fields("case when count(o.id) > 0 then round(1.0 * count(c.id) / count(o.id) * 100, 2) else 0.0 end as click_rate")
-
-	query.Group("x")
-
-	rs, err := query.All()
-	if err != nil {
-		g.Log().Error(context.Background(), err)
-		return nil
-	}
-
-	results := make([]map[string]interface{}, 0, len(rs))
-	for _, item := range rs {
-		results = append(results, item.Map())
-	}
-
-	fillItem := map[string]interface{}{
-		"click_rate": 0.0,
-	}
-
-	return map[string]interface{}{
-		"column_type": columnType,
-		"data":        o.fillChartData(results, fillItem, columnType, "x", startTime, endTime),
-	}
-}
-
 // FailedList failed list
-func (o *Overview) FailedList(campaignID int64, domain string, startTime, endTime int64) []map[string]interface{} {
+func (o *Overview) FailedList(domain string, startTime, endTime int64) []map[string]interface{} {
 	startTime, endTime = o.filterAndPrepareTimeSection(startTime, endTime)
 
-	query := o.buildBaseQuery(campaignID, domain, startTime, endTime)
+	query := o.buildBaseQuery(domain, startTime, endTime)
 
 	query.LeftJoin(`LATERAL(
 	SELECT id, dsn, delay, delays, relay, description
@@ -663,36 +515,6 @@ func (o *Overview) FailedList(campaignID int64, domain string, startTime, endTim
 	query.Fields("coalesce(d.description, sm.description) as description")
 
 	query.Where("sm.status != ?", "sent")
-
-	query.OrderDesc("sm.log_time_millis")
-
-	results, err := query.All()
-	if err != nil {
-		g.Log().Error(context.Background(), err)
-		return nil
-	}
-
-	lst := make([]map[string]interface{}, 0, len(results))
-	for _, item := range results {
-		lst = append(lst, item.Map())
-	}
-
-	return lst
-}
-
-// description FailedListBounced
-func (o *Overview) FailedListBounced(campaignID int64, domain string, startTime, endTime int64) []map[string]interface{} {
-
-	startTime, endTime = o.filterAndPrepareTimeSection(startTime, endTime)
-
-	query := o.buildBaseQuery(campaignID, domain, startTime, endTime)
-
-	query.Fields("sm.recipient")
-	query.Fields("sm.status")
-	query.Fields("sm.description")
-	query.Fields("sm.log_time")
-
-	query.Where("sm.status = ?", "bounced")
 
 	query.OrderDesc("sm.log_time_millis")
 

@@ -42,7 +42,7 @@
 
 		<!-- Bottom Rate Charts Area -->
 		<div class="rate-charts-card">
-			<rate-chart-panel :bounce="bounceRate" :click="clickRate" :open="openRate" />
+			<rate-chart-panel :bounce="bounceRate" />
 		</div>
 
 		<fail-modal />
@@ -76,8 +76,6 @@ const providers = ref<MailProvider[]>([])
 
 const rateData = reactive<RateData>({
 	delivery_rate: { label: t('overview.delivered'), value: 0, unit: '%' },
-	open_rate: { label: t('overview.opened'), value: 0, unit: '%' },
-	click_rate: { label: t('overview.clicked'), value: 0, unit: '%' },
 	bounce_rate: { label: t('overview.bounced'), value: 0, unit: '%' },
 })
 
@@ -96,16 +94,6 @@ const sendMail = ref<MailOverview['send_mail_chart']>({
 })
 
 const bounceRate = ref<MailOverview['bounce_rate_chart']>({
-	column_type: 'hourly',
-	data: [],
-})
-
-const clickRate = ref<MailOverview['click_rate_chart']>({
-	column_type: 'hourly',
-	data: [],
-})
-
-const openRate = ref<MailOverview['open_rate_chart']>({
 	column_type: 'hourly',
 	data: [],
 })
@@ -156,8 +144,6 @@ async function fetchOverviewData() {
 		providers.value = isArray(res.mail_providers) ? res.mail_providers : []
 		sendMail.value = res.send_mail_chart
 		bounceRate.value = res.bounce_rate_chart
-		clickRate.value = res.click_rate_chart
-		openRate.value = res.open_rate_chart
 	}
 }
 

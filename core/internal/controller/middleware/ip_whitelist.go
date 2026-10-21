@@ -12,24 +12,9 @@ import (
 
 // Paths excluded from IP whitelist verification
 var ExcludedPaths = map[string]struct{}{
-	"/favicon.ico":                   {},
-	"/robots.txt":                    {},
-	"/unsubscribe.html":              {},
-	"/unsubscribe_new.html":          {},
-	"/api/languages/get":             {},
-	"/api/unsubscribe/user_group":    {},
-	"/api/unsubscribe":               {},
-	"/api/unsubscribe_new":           {},
-	"/api/batch_mail/api/send":       {},
-	"/api/batch_mail/api/batch_send": {},
-	"/api/subscribe/submit":          {},
-	"/api/subscribe/confirm":         {},
-	"/already_subscribed.html":       {},
-	"/subscribe_confirm.html":        {},
-	"/subscribe_form.html":           {},
-	"/subscribe_success.html":        {},
-	"/unsubscribe_success.html":      {},
-	"/subscribe_form_code.html":      {},
+	"/favicon.ico":       {},
+	"/robots.txt":        {},
+	"/api/languages/get": {},
 }
 
 func isExcludedPath(path string) bool {
@@ -39,7 +24,6 @@ func isExcludedPath(path string) bool {
 	}
 	// Prefix match (static resources, acme challenge, etc.)
 	if strings.HasPrefix(path, "/.well-known/acme-challenge") ||
-		strings.HasPrefix(path, "/pmta/") ||
 		strings.HasPrefix(path, "/roundcube") {
 		g.Log().Debug(context.Background(), "[IP Whitelist 2] Excluded path: ", path, " allowed")
 		return true

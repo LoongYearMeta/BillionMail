@@ -1,20 +1,4 @@
 <template>
-	<n-card :title="$t('overview.rate.openRate')">
-		<line-chart
-			chart-color="#1a519b"
-			:date-type="open.column_type"
-			:chart-name="$t('overview.rate.openRate')"
-			:chart-data="openRateData">
-		</line-chart>
-	</n-card>
-	<n-card :title="$t('overview.rate.clickRate')">
-		<line-chart
-			chart-color="#1a519b"
-			:date-type="click.column_type"
-			:chart-name="$t('overview.rate.clickRate')"
-			:chart-data="clickRateData">
-		</line-chart>
-	</n-card>
 	<n-card :title="$t('overview.rate.bounceRate')">
 		<line-chart
 			chart-color="#20a53a"
@@ -32,17 +16,9 @@ import { MailOverview } from '../types'
 
 import LineChart from './LineChart.vue'
 
-const { open, click, bounce } = defineProps({
+const { bounce } = defineProps({
 	bounce: {
 		type: Object as PropType<MailOverview['bounce_rate_chart']>,
-		required: true,
-	},
-	click: {
-		type: Object as PropType<MailOverview['click_rate_chart']>,
-		required: true,
-	},
-	open: {
-		type: Object as PropType<MailOverview['open_rate_chart']>,
 		required: true,
 	},
 })
@@ -61,18 +37,6 @@ const getChartTime = (type: string, x: number) => {
 	}
 	return formatTime(date, format)
 }
-
-const openRateData = computed(() => {
-	return open.data.map(item => {
-		return [getChartTime(open.column_type, item.x), item.open_rate] as [string, number]
-	})
-})
-
-const clickRateData = computed(() => {
-	return click.data.map(item => {
-		return [getChartTime(click.column_type, item.x), item.click_rate] as [string, number]
-	})
-})
 
 const bounceRateData = computed(() => {
 	return bounce.data.map(item => {

@@ -1,6 +1,6 @@
 # BillionMail
 
-Open-source email marketing platform & mail server. Handles bulk sending, campaigns, contact management, warmup, and analytics.
+Self-hosted mail server for company domains (fork of aaPanel/BillionMail, marketing features removed): Postfix, Dovecot, Rspamd, alps webmail and a Go/Vue console for domains, mailboxes, DNS, certificates, SMTP relays, delivery stats and logs. Docker Compose is the only deployment.
 
 ## Project Structure
 
@@ -8,8 +8,8 @@ Open-source email marketing platform & mail server. Handles bulk sending, campai
 core/
 ├── internal/
 │   ├── cmd/            # CLI entry points
-│   ├── controller/     # HTTP handlers (16+ domains)
-│   ├── service/        # Business logic (batch_mail, domains, rbac, maillog_stat, warmup, contact, etc.)
+│   ├── controller/     # HTTP handlers, one dir per domain
+│   ├── service/        # Business logic (domains, mail_boxes, relay, rbac, maillog_stat, webmail, etc.)
 │   ├── dao/            # Data access layer
 │   ├── model/entity/   # ORM entities
 │   └── consts/         # Constants
@@ -22,19 +22,17 @@ core/
 │   ├── router/         # Vue Router + module routes
 │   ├── hooks/          # Composables
 │   ├── utils/          # Utilities (base, data, time, storage)
-│   ├── features/       # Feature-specific components (EmailEditor)
 │   └── i18n/           # Internationalization (en, zh, ja)
-├── template/           # Email templates
-└── manifest/           # Config/deployment
+└── manifest/           # GoFrame config
 conf/                   # Mail service configs (postfix, dovecot, rspamd, redis)
-Dockerfiles/            # Container definitions
+Dockerfiles/            # Image definitions; build-images.sh builds/pushes ghcr.io/loongyearmeta/mail-*
 ```
 
 ## Stack
 
-- **Backend:** Go 1.22, GoFrame v2, PostgreSQL, Redis
+- **Backend:** Go, GoFrame v2, PostgreSQL, Redis
 - **Frontend:** Vue 3, TypeScript, Pinia, Naive UI, Vitest, pnpm
-- **Mail:** Postfix, Dovecot, Rspamd
+- **Mail:** Postfix, Dovecot, Rspamd, alps webmail
 - **Deploy:** Docker Compose
 
 ## Organization Rules

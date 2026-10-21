@@ -76,7 +76,7 @@ func (c *ControllerV1) SetLanguage(ctx context.Context, req *v1.SetLanguageReq) 
 	public.SetCache("language", lang, 3600)
 
 	_ = public.WriteLog(ctx, public.LogParams{
-		Type: consts.LOGTYPE.Contacts,
+		Type: consts.LOGTYPE.Language,
 		Log:  fmt.Sprintf("Language changed to: %s ", lang),
 	})
 

@@ -2,13 +2,8 @@ package cmd
 
 import (
 	"billionmail-core/internal/consts"
-	"billionmail-core/internal/controller/abnormal_recipient"
-	"billionmail-core/internal/controller/batch_mail"
-	"billionmail-core/internal/controller/campaign"
-	"billionmail-core/internal/controller/contact"
 	"billionmail-core/internal/controller/dockerapi"
 	"billionmail-core/internal/controller/domains"
-	"billionmail-core/internal/controller/email_template"
 	"billionmail-core/internal/controller/files"
 	"billionmail-core/internal/controller/languages"
 	"billionmail-core/internal/controller/mail_boxes"
@@ -19,12 +14,8 @@ import (
 	"billionmail-core/internal/controller/rbac"
 	"billionmail-core/internal/controller/relay"
 	"billionmail-core/internal/controller/settings"
-	"billionmail-core/internal/controller/subscribe_list"
-	"billionmail-core/internal/controller/tags"
-	video_outreach_ctrl "billionmail-core/internal/controller/video_outreach"
 	"billionmail-core/internal/service/database_initialization"
 	docker "billionmail-core/internal/service/dockerapi"
-	"billionmail-core/internal/service/maillog_stat"
 	"billionmail-core/internal/service/middlewares"
 	"billionmail-core/internal/service/public"
 	rbac2 "billionmail-core/internal/service/rbac"
@@ -203,25 +194,10 @@ var (
 
 			// Define excluded URIs
 			excludesURIs := map[string]struct{}{
-				"/favicon.ico":                   {},
-				"/robots.txt":                    {},
-				"/unsubscribe.html":              {},
-				"/unsubscribe_new.html":          {},
-				"/api/aapanel/sso":               {},
-				"/api/unsubscribe/user_group":    {},
-				"/api/unsubscribe":               {},
-				"/api/unsubscribe_new":           {},
-				"/api/batch_mail/api/send":       {},
-				"/api/batch_mail/api/batch_send": {},
-				"/api/subscribe/confirm":         {},
-				"/api/subscribe/submit":          {},
-				"/api/languages/get":             {},
-				"/already_subscribed.html":       {},
-				"/subscribe_confirm.html":        {},
-				"/subscribe_form.html":           {},
-				"/subscribe_success.html":        {},
-				"/unsubscribe_success.html":      {},
-				"/subscribe_form_code.html":      {},
+				"/favicon.ico":       {},
+				"/robots.txt":        {},
+				"/api/aapanel/sso":   {},
+				"/api/languages/get": {},
 			}
 
 			// Bind Server Hooks
@@ -284,22 +260,6 @@ var (
 				// ghttp.HookAfterOutput: func(r *ghttp.Request) {},
 			})
 
-			// Register Common Handlers
-			s.Group("/", func(group *ghttp.RouterGroup) {
-				// Add CORS middleware
-				group.Middleware(ghttp.MiddlewareCORS)
-
-				// Add docker client middleware
-				group.Middleware(func(r *ghttp.Request) {
-					r.SetCtxVar(consts.DEFAULT_DOCKER_CLIENT_CTX_KEY, dk)
-					r.Middleware.Next()
-				})
-
-				group.Bind(
-					campaign.NewV1(),
-				)
-			})
-
 			// Register Apis
 			s.Group("/api", func(group *ghttp.RouterGroup) {
 				// Add CORS middleware
@@ -328,24 +288,14 @@ var (
 					mail_boxes.NewV1(),
 					overview.NewV1(),
 					dockerapi.NewV1(),
-					contact.NewV1(),
-					email_template.NewV1(),
-					batch_mail.NewV1(),
 					files.NewV1(),
-					abnormal_recipient.NewV1(),
 					languages.NewV1(),
 					mail_services.NewV1(),
 					relay.NewV1(),
 					settings.NewV1(),
-					subscribe_list.NewV1(),
 					operation_log.NewV1(),
-					tags.NewV1(),
-					video_outreach_ctrl.NewV1(),
 				)
 			})
-
-			// Public video landing page (no auth — recipients click from email)
-			s.BindHandler("GET:/landing/video", video_outreach_ctrl.ServeLandingPage)
 
 			// SPA fallback
 
@@ -423,11 +373,6 @@ var (
 				}
 
 				rspamdProxy.ServeHTTP(r.Response.BufferWriter, r.Request)
-			})
-
-			// Email Campaign Tracker
-			s.BindHandler("/pmta/*any", func(r *ghttp.Request) {
-				maillog_stat.CampaignEventHandler(r, r.Get("any").String())
 			})
 
 			// Add static file handler

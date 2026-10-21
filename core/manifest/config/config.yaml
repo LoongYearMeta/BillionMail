@@ -13,7 +13,6 @@ server:
   indexFiles: ["index.html", "index.htm"]
   indexFolder: false
   serverRoot: "public/dist"
-  searchPaths: ["public/html"]
   fileServerEnabled: true
 
   # Cookie Configuration
@@ -52,9 +51,6 @@ server:
 
   # Version
   version: "1.0.0"
-
-viewer:
-  Paths: ["template"]
 
 # Log Configuration
 logger:

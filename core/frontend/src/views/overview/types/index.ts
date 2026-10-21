@@ -2,20 +2,14 @@ export type MailOverview = {
 	dashboard: MailDashboard
 	mail_providers: MailProvider[]
 	send_mail_chart: SendMail
-	open_rate_chart: MailRateChart<OpenRateData>
-	click_rate_chart: MailRateChart<ClickRateData>
 	bounce_rate_chart: MailRateChart<BounceRateData>
 }
 
 export type MailDashboard = {
 	bounce_rate: number
 	bounced: number
-	click_rate: number
-	clicked: number
 	delivered: number
 	delivery_rate: number
-	open_rate: number
-	opened: number
 	sends: number
 	delayed_queue: number
 }
@@ -23,13 +17,9 @@ export type MailDashboard = {
 export type MailProvider = {
 	bounce_rate: number
 	bounced: number
-	click_rate: number
-	clicked: number
 	delivered: number
 	delivery_rate: number
 	mail_provider: string
-	open_rate: number
-	opened: number
 	sends: number
 }
 
@@ -57,18 +47,8 @@ export type MailRateChart<T> = {
 	data: T[]
 }
 
-export type ClickRateData = {
-	click_rate: number
-	x: number
-}
-
 export type BounceRateData = {
 	bounce_rate: number
-	x: number
-}
-
-export type OpenRateData = {
-	open_rate: number
 	x: number
 }
 

@@ -100,39 +100,6 @@ func init() {
 			CREATE INDEX IF NOT EXISTS deferredMails_postfixMessageId_logTime ON mailstat_deferred_mails (postfix_message_id, log_time)`,
 			`CREATE INDEX IF NOT EXISTS deferredMails_logTime_millis ON mailstat_deferred_mails (log_time_millis)`,
 
-			`-- Mail open tracking records
-			CREATE TABLE IF NOT EXISTS mailstat_opened (
-				id SERIAL PRIMARY KEY,
-				campaign_id INTEGER NOT NULL DEFAULT 0,
-				log_time_millis BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)::INTEGER),
-				log_time INTEGER GENERATED ALWAYS AS (log_time_millis / 1000) STORED,
-				recipient TEXT NOT NULL DEFAULT '',
-				postfix_message_id TEXT NOT NULL DEFAULT '',
-				message_id TEXT NOT NULL DEFAULT ''
-			)`,
-
-			`-- Indexes
-			CREATE INDEX IF NOT EXISTS opened_postfixMessageId_logTime ON mailstat_opened (postfix_message_id, log_time)`,
-			`CREATE INDEX IF NOT EXISTS opened_logTime_millis ON mailstat_opened (log_time_millis)`,
-			`CREATE INDEX IF NOT EXISTS opened_campaignId_logTime ON mailstat_opened (campaign_id, log_time)`,
-
-			`-- Mail click tracking records
-			CREATE TABLE IF NOT EXISTS mailstat_clicked (
-				id SERIAL PRIMARY KEY,
-				campaign_id INTEGER NOT NULL DEFAULT 0,
-				log_time_millis BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)::INTEGER),
-				log_time INTEGER GENERATED ALWAYS AS (log_time_millis / 1000) STORED,
-				recipient TEXT NOT NULL DEFAULT '',
-				url TEXT NOT NULL DEFAULT '',
-				postfix_message_id TEXT NOT NULL DEFAULT '',
-				message_id TEXT NOT NULL DEFAULT ''
-			)`,
-
-			`-- Indexes
-			CREATE INDEX IF NOT EXISTS clicked_postfixMessageId_logTime_url ON mailstat_clicked (postfix_message_id, log_time, url)`,
-			`CREATE INDEX IF NOT EXISTS clicked_logTime_millis ON mailstat_clicked (log_time_millis)`,
-			`CREATE INDEX IF NOT EXISTS clicked_campaignId_logTime_url_recipient ON mailstat_clicked (campaign_id, log_time, url, recipient)`,
-
 			`-- Mail complaint/FBL records
 			CREATE TABLE IF NOT EXISTS mailstat_complaints (
 				id SERIAL PRIMARY KEY,

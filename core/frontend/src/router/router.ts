@@ -1,20 +1,14 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import { is, isDev } from '@/utils'
+import { is } from '@/utils'
 
 // Routes reflect list
 const routesReflectList = [
 	'Overview',
-	'Email Marketing',
-	'template',
-	'Send API',
-	'Contacts',
 	'MailDomain',
 	'MailBoxes',
 	'SMTP',
 	'Logs',
 	'Settings',
-	'Automation',
-	'Video Outreach',
 ]
 
 // Import routes from modules
@@ -43,16 +37,6 @@ const routeRank = (route: RouteRecordRaw) => {
 }
 menuList.sort((a, b) => routeRank(a) - routeRank(b))
 
-const otherArray: RouteRecordRaw[] = []
-
-if (isDev) {
-	otherArray.push({
-		path: '/test',
-		name: 'Test',
-		component: () => import('@/views/test/index.vue'),
-	})
-}
-
 export const routes: RouteRecordRaw[] = [
 	{
 		path: '/login',
@@ -64,7 +48,6 @@ export const routes: RouteRecordRaw[] = [
 		redirect: '/overview',
 	},
 	...menuList,
-	...otherArray,
 ]
 
 const router = createRouter({
