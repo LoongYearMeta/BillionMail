@@ -1,9 +1,10 @@
 #!/bin/bash
 # Build the BillionMail images from this repository, optionally pushing them.
 #
-#   Dockerfiles/build-images.sh                 build for this machine, load into docker
-#   PUSH=1 Dockerfiles/build-images.sh          build linux/amd64 + linux/arm64, push to the registry
+#   Dockerfiles/build-images.sh                 build linux/amd64, load into docker
+#   PUSH=1 Dockerfiles/build-images.sh          build linux/amd64, push to the registry
 #   Dockerfiles/build-images.sh core webmail    only the listed images
+#   PLATFORMS=linux/amd64,linux/arm64 PUSH=1 …  multi-platform (needs QEMU for foreign arches)
 #
 # Image names and tags come from docker-compose.yml, so bump them there.
 # Pushing to ghcr.io needs `docker login ghcr.io` with a token that has write:packages.
@@ -13,11 +14,8 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "${ROOT}"
 
 PUSH=${PUSH:-0}
-if [ "${PUSH}" = "1" ]; then
-    PLATFORMS=${PLATFORMS:-linux/amd64,linux/arm64}
-else
-    PLATFORMS=${PLATFORMS:-linux/$(docker version --format '{{.Server.Arch}}')}
-fi
+# Production hosts are amd64
+PLATFORMS=${PLATFORMS:-linux/amd64}
 GO_IMAGE=golang:1.26.5-alpine
 
 # service name -> image reference, e.g. core -> ghcr.io/loongyearmeta/mail-core:1.0.0
@@ -30,16 +28,15 @@ done < <(grep -oE 'image: ghcr\.io/[^ ]+/mail-[a-z]+:[^ ]+' docker-compose.yml |
 SERVICES=("$@")
 [ ${#SERVICES[@]} -eq 0 ] && SERVICES=(core webmail dovecot postfix rspamd)
 
-if [ "${PUSH}" = "1" ] || [[ "${PLATFORMS}" == *,* ]]; then
-    # Multi-platform builds need a docker-container builder (and QEMU for foreign arches).
+BUILDER=()
+OUTPUT=(--load)
+[ "${PUSH}" = "1" ] && OUTPUT=(--push)
+if [[ "${PLATFORMS}" == *,* ]]; then
+    # Multi-platform builds need a docker-container builder and can only be pushed.
+    [ "${PUSH}" = "1" ] || { echo "Multi-platform builds can only be pushed, set PUSH=1"; exit 1; }
     docker buildx inspect billionmail-builder >/dev/null 2>&1 \
         || docker buildx create --name billionmail-builder --driver docker-container >/dev/null
     BUILDER=(--builder billionmail-builder)
-    OUTPUT=(--push)
-    [ "${PUSH}" = "1" ] || { echo "Multi-platform builds can only be pushed, set PUSH=1"; exit 1; }
-else
-    BUILDER=()
-    OUTPUT=(--load)
 fi
 
 # core: the Dockerfile packs a prebuilt binary per architecture plus the committed frontend dist.
