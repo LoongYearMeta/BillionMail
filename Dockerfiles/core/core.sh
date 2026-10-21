@@ -1,23 +1,39 @@
 #!/bin/bash
 
-if [ -f "/opt/billionmail/.env" ]; then
-    if ! grep -q "ADMIN_USERNAME" /opt/billionmail/.env; then
-        ADMIN_USERNAME=$(LC_ALL=C </dev/urandom tr -dc A-Za-z0-9 2> /dev/null | head -c 8)
+ENV_FILE=/opt/billionmail/.env
 
-        # Default administrator account password 
-        echo "ADMIN_USERNAME=${ADMIN_USERNAME}" >> /opt/billionmail/.env
-    fi
+# First start: generate the console credentials and safe entrance left empty in .env
+set_random_env() {
+    local key=$1 length=$2 value
+    grep -q "^${key}=." "${ENV_FILE}" && return
+    value=$(LC_ALL=C </dev/urandom tr -dc A-Za-z0-9 2> /dev/null | head -c "${length}")
+    # .env is a bind-mounted file: rewrite its content, keep the inode
+    { grep -v "^${key}=" "${ENV_FILE}"; echo "${key}=${value}"; } > /tmp/env.new
+    cat /tmp/env.new > "${ENV_FILE}" && rm -f /tmp/env.new
+    echo "Generated ${key} in .env"
+}
 
-    if ! grep -q "ADMIN_PASSWORD" /opt/billionmail/.env; then
-        ADMIN_PASSWORD=$(LC_ALL=C </dev/urandom tr -dc A-Za-z0-9 2> /dev/null | head -c 8)
-        # Default administrator account password 
-        echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> /opt/billionmail/.env
-    fi
+if [ -f "${ENV_FILE}" ]; then
+    set_random_env ADMIN_USERNAME 8
+    set_random_env ADMIN_PASSWORD 16
+    set_random_env SafePath 8
 fi
 
-# Generate DH params
+# DH params ship with the repository
 if [ ! -f "/etc/ssl/mail/dh.pem" ]; then
-    cp -d -n /etc/ssl/ssl-self-signed/* /etc/ssl/mail/
+    cp -d -n /etc/ssl/ssl-self-signed/dh.pem /etc/ssl/mail/
+fi
+
+# First start: a self-signed certificate for this host until Let's Encrypt issues one.
+# Dovecot waits for it; write to temp files and move them so it never sees a partial file.
+if [ ! -f "/etc/ssl/mail/cert.pem" ] || [ ! -f "/etc/ssl/mail/key.pem" ]; then
+    HOSTNAME_CN=$(grep "^BILLIONMAIL_HOSTNAME=" "${ENV_FILE}" 2> /dev/null | cut -d= -f2)
+    openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 3650 \
+        -subj "/CN=${HOSTNAME_CN:-localhost}" \
+        -keyout /etc/ssl/mail/key.pem.tmp -out /etc/ssl/mail/cert.pem.tmp 2> /dev/null \
+        && mv /etc/ssl/mail/key.pem.tmp /etc/ssl/mail/key.pem \
+        && mv /etc/ssl/mail/cert.pem.tmp /etc/ssl/mail/cert.pem \
+        && echo "Generated a self-signed certificate for ${HOSTNAME_CN:-localhost}"
 fi
 
 # # Generate DH params

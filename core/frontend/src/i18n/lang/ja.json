@@ -1289,7 +1289,7 @@
 				"disable": "Disable",
 				"add": "Add",
 				"clear": "Clear",
-				"description": "Only allow IPs in the list to access, terminal command to disable: bm.sh cancel-ip-limit",
+				"description": "リスト内の IP のみアクセスを許可します。サーバー側で無効にするには、.env の IP_WHITELIST_ENABLE=false を設定し、docker compose restart core-billionmail を実行します",
 				"placeholder": "Please enter IP address",
 				"validation": {
 					"ipRequired": "Please enter IP address"

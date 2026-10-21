@@ -23,11 +23,8 @@ BillionMail is a **future open-source Mail server, Email marketing platform** de
 # Just 3 steps to send a billion emails!
 **Billion emails. Any business. Guaranteed.**
 
-### Step 1️⃣ Install BillionMail: 
-✅ It takes **only 8️⃣ minutes** from installation to **✅ successful email sending**
-```shell
-cd /opt && git clone https://github.com/aaPanel/BillionMail && cd BillionMail && bash install.sh
-```
+### Step 1️⃣ Install BillionMail
+See [Install with Docker Compose](#install-with-docker-compose).
 
 
 ### Step 2️⃣: Connect Your Domain
@@ -53,35 +50,42 @@ cd /opt && git clone https://github.com/aaPanel/BillionMail && cd BillionMail &&
 </div>
 
 
-## Other installation methods
+## Install with Docker Compose
 
-### One-click installation on aaPanel
-👉 https://www.aapanel.com/new/download.html  (Log in to ✅aaPanel --> 🐳Docker --> 1️⃣OneClick install)
+BillionMail runs only with Docker Compose. You need Docker with the Compose plugin, and ports 25, 465, 587, 110, 995, 143, 993, 80 and 443 open.
 
-
-
-
-**Docker**
 ```shell
-cd /opt && git clone https://github.com/aaPanel/BillionMail && cd BillionMail && cp env_init .env && docker compose up -d || docker-compose up -d
+git clone https://github.com/LoongYearMeta/BillionMail && cd BillionMail
+cp .env.example .env
+sed -i -e "s/^DBPASS=.*/DBPASS=$(openssl rand -hex 16)/" \
+       -e "s/^REDISPASS=.*/REDISPASS=$(openssl rand -hex 16)/" .env
+# Set your mail hostname, e.g. mail.example.com
+sed -i "s/^BILLIONMAIL_HOSTNAME=.*/BILLIONMAIL_HOSTNAME=mail.example.com/" .env
+docker compose up -d
 ```
 
-## Management script
-- Management help
+On the first start BillionMail generates the console username, password and safe entrance and writes them to `.env`:
 
-  `bm help`
+```shell
+grep -E '^(ADMIN_USERNAME|ADMIN_PASSWORD|SafePath)=' .env
+```
 
-- View Login default info
+Then open `https://<your-server>/<SafePath>`.
 
-  `bm default`
+## Operations
 
-- Show domain DNS record
+Run these in the BillionMail directory.
 
-  `bm show-record`
-
-- Update BillionMail
-
-  `bm update`
+| Task | Command |
+|------|---------|
+| Status | `docker compose ps` |
+| Logs | `docker compose logs -f core-billionmail` (mail service logs are also in `./logs/`) |
+| Restart a service | `docker compose restart postfix-billionmail` |
+| Stop / start | `docker compose down` / `docker compose up -d` |
+| Update | `git pull && docker compose pull && docker compose up -d` |
+| Change the admin username or password, the safe entrance or the console IP whitelist (`IP_WHITELIST_ENABLE`) | edit `.env`, then `docker compose restart core-billionmail` |
+| Change ports or the time zone | edit `.env`, then `docker compose up -d` |
+| Domains, mailboxes, DNS records | the console |
 
 ## Live Demo
 BillionMail Demo: [https://demo.billionmail.com/billionmail](https://demo.billionmail.com/billionmail)
@@ -121,23 +125,11 @@ BillionMail is a **community-driven project**, and we need your support to get s
 
 ## Issues
 
-If you encounter any issues or have feature requests, please [open an issue](https://github.com/aaPanel/BillionMail/issues). Be sure to include:
+If you encounter any issues or have feature requests, please [open an issue](https://github.com/LoongYearMeta/BillionMail/issues). Be sure to include:
 
 - A clear description of the problem or request.
 - Steps to reproduce the issue (if applicable).
 - Screenshots or error logs (if applicable).
-
-## Install Now:
-✅It takes **only 8 minutes** from installation to **successful email sending**
-```shell
-cd /opt && git clone https://github.com/aaPanel/BillionMail && cd BillionMail && bash install.sh
-```
-
-
-**Install with Docker:** (Please install Docker and docker-compose-plugin manually, and modify .env file)
-```shell
-cd /opt && git clone https://github.com/aaPanel/BillionMail && cd BillionMail && cp env_init .env && docker compose up -d || docker-compose up -d
-```
 
 ## Star History
 

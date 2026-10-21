@@ -1365,7 +1365,7 @@
 				"disable": "关闭",
 				"add": "添加",
 				"clear": "清空",
-				"description": "仅允许列表中的IP访问，终端命令关闭: bm.sh cancel-ip-limit",
+				"description": "仅允许列表中的IP访问。在服务器上关闭：将 .env 中的 IP_WHITELIST_ENABLE 设为 false，然后执行 docker compose restart core-billionmail",
 				"placeholder": "请输入IP地址",
 				"validation": {
 					"ipRequired": "请输入IP地址"

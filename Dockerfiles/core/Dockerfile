@@ -33,6 +33,7 @@ RUN apk add --no-cache \
     fail2ban \
     iptables \
     ipset \
+    openssl \
     && rm -rf /var/cache/apk/* \
     && chmod +x /stop-supervisor.sh /core.sh /restart_fail2ban.sh /opt/billionmail/core/billionmail
 

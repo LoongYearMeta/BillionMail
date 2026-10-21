@@ -11,7 +11,7 @@ services:
         - TZ=${TZ}
         - POSTGRES_DB=${DBNAME}
         - POSTGRES_USER=${DBUSER}
-        - POSTGRES_PASSWORD=${DBPASS}
+        - POSTGRES_PASSWORD=${DBPASS:?Set DBPASS in .env}
       restart: always
       ports:
         - "${SQL_PORT:-127.0.0.1:25432}:5432"
@@ -32,7 +32,7 @@ services:
         - "${REDIS_PORT:-127.0.0.1:26379}:6379"
       environment:
         - TZ=${TZ}
-        - REDISPASS=${REDISPASS}
+        - REDISPASS=${REDISPASS:?Set REDISPASS in .env}
       sysctls:
         - net.core.somaxconn=4096
       networks:

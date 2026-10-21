@@ -150,12 +150,13 @@ func convertEnvToConfig(envMap map[string]string) *v1.SystemConfig {
 	if HostWorkDir == "" {
 		HostWorkDir = projectPath
 	}
-	config.ManagePorts.Command1 = fmt.Sprintf("cd %s && echo \"PORT\" | bash bm.sh change-port", HostWorkDir)
-	config.ManagePorts.Command2 = fmt.Sprintf("cd %s && echo \"PORT\" | bash bm.sh change-apply-ssl-port", HostWorkDir)
+	// Commands to run on the host; the console replaces PORT / TIME ZONE with the chosen value
+	config.ManagePorts.Command1 = fmt.Sprintf("cd %s && sed -i 's/^HTTPS_PORT=.*/HTTPS_PORT=PORT/' .env && docker compose up -d", HostWorkDir)
+	config.ManagePorts.Command2 = fmt.Sprintf("cd %s && sed -i 's/^HTTP_PORT=.*/HTTP_PORT=PORT/' .env && docker compose up -d", HostWorkDir)
 
 	// Time zone configuration
 	config.ManageTimeZone.TimeZone = envMap["TZ"]
-	config.ManageTimeZone.Command = fmt.Sprintf("cd %s && echo \"TIME ZONE\" | bash bm.sh change-tz", HostWorkDir)
+	config.ManageTimeZone.Command = fmt.Sprintf("cd %s && sed -i 's|^TZ=.*|TZ=TIME ZONE|' .env && docker compose up -d", HostWorkDir)
 
 	// Network configuration
 	config.IPv4Network = envMap["IPV4_NETWORK"]

@@ -4,9 +4,16 @@
 id vmail || useradd -r -u 150 -g mail -d /var/vmail -s /sbin/nologin -c "Virtual Mail User" vmail
 chown -R vmail:mail /var/vmail
 
-if [ ! -f "/etc/ssl/mail/dh.pem" ] || [ ! -f "/etc/ssl/mail/cert.pem" ] || [ ! -f "/etc/ssl/mail/key.pem" ]; then
-    cp -d -n /etc/ssl/ssl-self-signed/* /etc/ssl/mail/
+if [ ! -f "/etc/ssl/mail/dh.pem" ]; then
+    cp -d -n /etc/ssl/ssl-self-signed/dh.pem /etc/ssl/mail/
 fi
+
+# On the first start core generates the self-signed certificate, Dovecot cannot start without it
+for i in $(seq 1 60); do
+    [ -f "/etc/ssl/mail/cert.pem" ] && [ -f "/etc/ssl/mail/key.pem" ] && break
+    echo "Waiting for /etc/ssl/mail/cert.pem and key.pem from core..."
+    sleep 2
+done
 
 if ! grep -q "rotate_log.sh" /var/spool/cron/crontabs/root; then
     chmod +x /rotate_log.sh
