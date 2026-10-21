@@ -802,7 +802,6 @@
 	"domain": {
 		"title": "MailDomain",
 		"addDomain": "添加域名",
-		"help": "添加你要用来发邮件的域名",
 		"columns": {
 			"domain": "域名",
 			"quota": "配额",
@@ -832,7 +831,7 @@
 			"title": "黑名单检测",
 			"checking": "正在检测解析到 {ip} 的 {results}，对比 {tested} 个已知黑名单...",
 			"listed": "已列入黑名单数：{count}",
-			"success": "您的 IP 未在 aaPanel 已知的黑名单中",
+			"success": "您的 IP 不在所检查的任何黑名单中",
 			"columns": {
 				"blacklist": "黑名单",
 				"responseIp": "响应 IP",
@@ -853,10 +852,10 @@
 			"addTitle": "添加域名",
 			"editTitle": "编辑域名",
 			"domain": "域名",
-			"domainPlaceholder": "请输入域名，例如：billionmail.com",
-			"urlsPlacement": "请输入域名，例如：http://billionmail.com",
+			"domainPlaceholder": "请输入域名，例如：example.com",
+			"urlsPlacement": "请输入网址，例如：https://example.com",
 			"aRecord": "A记录",
-			"aRecordPlaceholder": "请输入A记录，例如：mailAapanelCom",
+			"aRecordPlaceholder": "请输入A记录，例如：mail.example.com",
 			"quota": "域名配额",
 			"mailboxCount": "邮箱数量",
 			"globalCatch": "Catch All",
@@ -1167,7 +1166,6 @@
 	},
 	"smtp": {
 		"title": "SMTP中继服务管理",
-		"description": "管理您的SMTP中继服务，支持多种服务提供商",
 		"empty": "暂无SMTP中继服务",
 		"providers": {
 			"custom": "自定义SMTP"

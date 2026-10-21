@@ -353,7 +353,7 @@ func buildTestEmailHTML(settings *v1.SetBlacklistAlertSettingsReq) string {
 			<div class="footer">
 				<div>
 					<span>Powered by </span>
-					<a href="https://www.billionmail.com/" target="_blank">BillionMail</a>
+					BillionMail
 				</div>
 			</div>
 		</div>

@@ -76,7 +76,7 @@ func TestSmtpConnection(host, port, user, password string) *SmtpConnectionTestRe
 	sender := mail_service.NewEmailSender()
 	sender.Host = host
 	sender.Port = port
-	sender.Email = "test_connection@billionmail.com" // Temporary email for testing
+	sender.Email = "test_connection@example.com" // Placeholder, Connect does not send MAIL FROM
 
 	// Handle authentication based on whether credentials are provided
 	isAuthRequired := user != "" && password != ""

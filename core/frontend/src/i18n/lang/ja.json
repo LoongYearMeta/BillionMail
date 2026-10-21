@@ -775,7 +775,6 @@
 	"domain": {
 		"title": "MailDomain",
 		"addDomain": "ドメインを追加",
-		"help": "メール送信に使用するドメインを追加してください",
 		"columns": {
 			"domain": "ドメイン",
 			"quota": "クォータ",
@@ -808,10 +807,10 @@
 			"addTitle": "ドメイン追加",
 			"editTitle": "ドメイン編集",
 			"domain": "ドメイン",
-			"domainPlaceholder": "例: aapanel.com",
-			"urlsPlacement": "例: https://aapanel.com",
+			"domainPlaceholder": "例: example.com",
+			"urlsPlacement": "例: https://example.com",
 			"aRecord": "A レコード",
-			"aRecordPlaceholder": "例: mail.aapanel.com",
+			"aRecordPlaceholder": "例: mail.example.com",
 			"quota": "ドメインクォータ",
 			"mailboxCount": "メールボックス数",
 			"globalCatch": "Catch All",
@@ -905,7 +904,7 @@
 			"title": "ブラックリストチェック",
 			"checking": "{results} は {ip} に解決され、既知のブラックリスト {tested} 件に対してチェックしています...",
 			"listed": "リスト件数: {count}",
-			"success": "aaPanel が認識するブラックリストには IP は存在しません",
+			"success": "IP はチェックしたどのブラックリストにも登録されていません",
 			"columns": {
 				"blacklist": "ブラックリスト",
 				"responseIp": "レスポンス IP",
@@ -1084,7 +1083,6 @@
 	},
 	"smtp": {
 		"title": "SMTP リレーサービス管理",
-		"description": "複数のサービスプロバイダーに対応した SMTP リレーサービスを管理",
 		"empty": "SMTP リレーサービスがありません",
 		"providers": {
 			"gmail": "Gmail",

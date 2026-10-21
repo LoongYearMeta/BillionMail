@@ -1,6 +1,6 @@
 <div align="center">
   <a name="readme-top"></a>
-  <h1><a href="https://www.billionmail.com/" target="_blank">BillionMail 📧</a></h1>
+  <h1>BillionMail 📧</h1>
 
 
 ## An Open-Source MailServer, NewsLetter, Email Marketing Solution for Smarter Campaigns
@@ -10,8 +10,6 @@
 ## What is BillionMail?
 
 BillionMail is a **future open-source Mail server, Email marketing platform** designed to help businesses and individuals manage their email campaigns with ease. Whether you're sending newsletters, promotional emails, or transactional messages, this tool will provide **full control** over your email marketing efforts. With features like **advanced analytics**, and **customer management**, you'll be able to create, send, and track emails like a pro.
-
-![BillionMail Banner](https://www.billionmail.com/home.png?v1)
 
 # Just 3 steps to send a billion emails!
 **Billion emails. Any business. Guaranteed.**
@@ -31,16 +29,6 @@ See [Install with Docker Compose](#install-with-docker-compose).
 - Write or paste your email
 - Choose list & tags
 - Set send time or send now
-
-
-<div align="center">
-  <a href="https://www.youtube.com/embed/UHgxZa_9jGs?si=0-f1B5hDtcWImvQv" target="_blank">
-    <img src="https://img.youtube.com/vi/UHgxZa_9jGs/maxresdefault.jpg" alt="" width="80%">
-    <br />
-    <img src="https://www.iconfinder.com/icons/317714/download/png/16" alt="YouTube" width="16"/>
-    <b>Watch on Youtube</b>
-  </a>
-</div>
 
 
 ## Install with Docker Compose
@@ -80,14 +68,6 @@ Run these in the BillionMail directory.
 | Change the admin username or password, the safe entrance or the console IP whitelist (`IP_WHITELIST_ENABLE`) | edit `.env`, then `docker compose restart core-billionmail` |
 | Change ports or the time zone | edit `.env`, then `docker compose up -d` |
 | Domains, mailboxes, DNS records | the console |
-
-## Live Demo
-BillionMail Demo: [https://demo.billionmail.com/billionmail](https://demo.billionmail.com/billionmail)
-
-Username: `billionmail` 
-
-Password: `billionmail` 
-
 
 ## WebMail
 

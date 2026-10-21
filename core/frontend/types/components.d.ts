@@ -18,7 +18,6 @@ declare module 'vue' {
     BtEditor: typeof import('./../src/components/base/bt-editor/index.vue')['default']
     BtFileUpload: typeof import('./../src/components/base/bt-file-upload/index.vue')['default']
     BtForm: typeof import('./../src/components/ui/bt-form/index.vue')['default']
-    BtHelp: typeof import('./../src/components/base/bt-help/index.vue')['default']
     BtLogs: typeof import('./../src/components/base/bt-logs/index.vue')['default']
     BtModal: typeof import('./../src/components/ui/bt-modal/index.vue')['default']
     BtMore: typeof import('./../src/components/base/bt-more/index.vue')['default']

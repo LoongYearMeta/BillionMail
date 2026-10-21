@@ -817,7 +817,6 @@
 	"domain": {
 		"title": "MailDomain",
 		"addDomain": "Add Domain",
-		"help": "Add the domain you want to use to send emails",
 		"columns": {
 			"domain": "Domain",
 			"quota": "Quota",
@@ -843,7 +842,7 @@
 			"title": "Black List Check",
 			"checking": "Checking {results} which resolves to {ip} against {tested} known blacklists...",
 			"listed": "Listed: {count}",
-			"success": "Your IP does not exist in the blacklist known by aaPanel",
+			"success": "Your IP is not listed on any of the checked blacklists",
 			"columns": {
 				"blacklist": "Black List",
 				"responseIp": "Response IP",
@@ -867,10 +866,10 @@
 			"addTitle": "Add Domain",
 			"editTitle": "Edit Domain",
 			"domain": "Domain",
-			"domainPlaceholder": "Please enter domain, e.g.: billionmail.com",
-			"urlsPlacement": "Please enter url, e.g.: https://billionmail.com",
+			"domainPlaceholder": "Please enter domain, e.g.: example.com",
+			"urlsPlacement": "Please enter url, e.g.: https://example.com",
 			"aRecord": "A Record",
-			"aRecordPlaceholder": "Please enter A record, e.g.: mail.aapanel.com",
+			"aRecordPlaceholder": "Please enter A record, e.g.: mail.example.com",
 			"quota": "Domain Quota",
 			"mailboxCount": "Mailbox Count",
 			"globalCatch": "Catch All",
@@ -1175,7 +1174,6 @@
 	},
 	"smtp": {
 		"title": "SMTP Relay Service Management",
-		"description": "Manage your SMTP relay services with support for multiple service providers",
 		"empty": "No SMTP relay services available",
 		"providers": {
 			"gmail": "Gmail",
