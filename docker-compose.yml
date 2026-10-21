@@ -90,10 +90,9 @@ services:
         - BILLIONMAIL_HOSTNAME=${BILLIONMAIL_HOSTNAME}
         - REDISPASS=${REDISPASS}
         - RETENTION_DAYS=${RETENTION_DAYS:-7}
+      # Only the TLS ports are published; plain 143 stays inside the docker network for the webmail
       ports:
-        - "${IMAP_PORT:-143}:143"
         - "${IMAPS_PORT:-993}:993"
-        - "${POP_PORT:-110}:110"
         - "${POPS_PORT:-995}:995"
       restart: always
       ulimits:
@@ -198,6 +197,24 @@ services:
         billionmail-network:
           aliases:
             - core
+
+
+    fail2ban-billionmail:
+      image: ghcr.io/loongyearmeta/mail-fail2ban:1.0.0
+      build: ./Dockerfiles/fail2ban
+      network_mode: host
+      cap_add:
+        - NET_ADMIN
+        - NET_RAW
+      volumes:
+        - ./logs/postfix:/var/log/mail/postfix:ro
+        - ./logs/dovecot:/var/log/mail/dovecot:ro
+        - ./logs/fail2ban-mail:/var/log/fail2ban
+        - ./fail2ban-data:/var/lib/fail2ban
+      environment:
+        - TZ=${TZ}
+        - IPV4_NETWORK=${IPV4_NETWORK:-10.66.66}
+      restart: always
 
 
 networks:

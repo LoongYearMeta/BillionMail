@@ -506,7 +506,7 @@
 			"batchConfirm": "{count}個のメールボックスを削除してもよろしいですか？"
 		},
 		"loginInfo": {
-			"template": "WebMail: {webmail}\nユーザー名: {username}\nパスワード: {password}\nPOP サービス [ アドレス: {mx} ポート: 110/995 ]\nIMAP サービス [ アドレス: {mx} ポート: 143/993 ]\nSMTP サービス [ アドレス: {mx} ポート: 25/465/587 ]"
+			"template": "WebMail: {webmail}\nユーザー名: {username}\nパスワード: {password}\nPOP サービス [ アドレス: {mx} ポート: 995 ]\nIMAP サービス [ アドレス: {mx} ポート: 993 ]\nSMTP サービス [ アドレス: {mx} ポート: 465/587 ]"
 		},
 		"api": {
 			"loading": {

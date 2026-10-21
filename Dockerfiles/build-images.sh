@@ -17,10 +17,10 @@ declare -A IMAGES
 while read -r ref; do
     name=${ref##*/mail-}
     IMAGES[${name%%:*}]=${ref}
-done < <(grep -oE 'image: ghcr\.io/[^ ]+/mail-[a-z]+:[^ ]+' docker-compose.yml | awk '{print $2}')
+done < <(grep -oE 'image: ghcr\.io/[^ ]+/mail-[a-z0-9]+:[^ ]+' docker-compose.yml | awk '{print $2}')
 
 SERVICES=("$@")
-[ ${#SERVICES[@]} -eq 0 ] && SERVICES=(core webmail dovecot postfix rspamd)
+[ ${#SERVICES[@]} -eq 0 ] && SERVICES=(core webmail dovecot postfix rspamd fail2ban)
 
 # core: the Dockerfile packs the prebuilt binary plus the committed frontend dist.
 prepare_core() {

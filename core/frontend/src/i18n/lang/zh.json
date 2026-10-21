@@ -464,7 +464,7 @@
 			"batchConfirm": "确定删除{count}个邮箱？"
 		},
 		"loginInfo": {
-			"template": "WebMail: {webmail}\n用户名: {username}\n密码: {password}\nPOP service [ Address: {mx} Port: 110/995 ]\nIMAP service [ Address: {mx} Port: 143/993 ]\nSMTP service [ Address: {mx} Port: 25/465/587 ]"
+			"template": "WebMail: {webmail}\n用户名: {username}\n密码: {password}\nPOP service [ Address: {mx} Port: 995 ]\nIMAP service [ Address: {mx} Port: 993 ]\nSMTP service [ Address: {mx} Port: 465/587 ]"
 		},
 		"api": {
 			"loading": {

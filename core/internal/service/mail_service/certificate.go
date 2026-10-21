@@ -337,8 +337,8 @@ func (c *Certificate) updatePostfixSNIMap(domain, certPath, keyPath string) erro
 		return fmt.Errorf("failed to write postfix config: %v", err)
 	}
 
-	// Rehash configuration
-	if _, err := c.dockerApiClient().ExecCommandByName(context.Background(), consts.SERVICES.Postfix, []string{"postmap", "/etc/postfix/conf/vmail_ssl.map"}, "root"); err != nil {
+	// Rehash configuration; -F embeds the certificate files, as tls_server_sni_maps expects
+	if _, err := c.dockerApiClient().ExecCommandByName(context.Background(), consts.SERVICES.Postfix, []string{"postmap", "-F", "hash:/etc/postfix/conf/vmail_ssl.map"}, "root"); err != nil {
 		return fmt.Errorf("failed to hash postfix config: %v", err)
 	}
 

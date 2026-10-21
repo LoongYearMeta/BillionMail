@@ -79,6 +79,13 @@ func Start(ctx context.Context) (err error) {
 		mail_service.FixPostfixMainConfig(ctx)
 		mail_service.FixRspamdDKIMSigningConfig(ctx)
 		mail_service.FixDovecotSSLConfig(ctx)
+		mail_service.RestrictPort25Auth(ctx)
+		mail_service.EnsureCertificateSNI(ctx)
+	})
+
+	// Certificates installed by copying files reach Postfix/Dovecot SNI within 5 minutes
+	gtimer.Add(5*time.Minute, func() {
+		mail_service.EnsureCertificateSNI(ctx)
 	})
 
 	// Test the smtp relay configuration connection status
