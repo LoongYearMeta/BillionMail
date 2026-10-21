@@ -8,9 +8,6 @@ const routesReflectList = [
 	'template',
 	'Send API',
 	'Contacts',
-	'Sequences',
-	'Leads',
-	'Enrichment',
 	'MailDomain',
 	'MailBoxes',
 	'SMTP',
@@ -24,7 +21,8 @@ const routesReflectList = [
 const modules = import.meta.webpackContext('./modules', {
 	// Whether to search for subdirectories
 	recursive: false,
-	regExp: /^[^.]+\.ts$/,
+	// Keys look like "./overview.ts"; skip "./overview.test.ts"
+	regExp: /^\.\/[^.]+\.ts$/,
 })
 
 // Module routes
@@ -38,12 +36,12 @@ for (const path of modules.keys()) {
 	}
 }
 
-// Sort module routes
-menuList = menuList.reduce((p: RouteRecordRaw[], v: RouteRecordRaw) => {
-	const routeIndex = routesReflectList.findIndex(item => item == v.meta!.title)
-	p[routeIndex] = v
-	return p
-}, [] as RouteRecordRaw[])
+// Sort module routes, modules missing from the list go last
+const routeRank = (route: RouteRecordRaw) => {
+	const index = routesReflectList.indexOf(route.meta?.title as string)
+	return index === -1 ? routesReflectList.length : index
+}
+menuList.sort((a, b) => routeRank(a) - routeRank(b))
 
 const otherArray: RouteRecordRaw[] = []
 
