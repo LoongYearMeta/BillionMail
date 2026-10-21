@@ -9,24 +9,24 @@ import (
 	"context"
 	"os"
 	"path/filepath"
-	"sync"
+	"strings"
 	"time"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// Webmail certificates (webmail.<domain>) are managed apart from the mail host
-// certificates: they are only requested once the webmail DNS record points at
-// this server, a failure never touches the mail certificate, and core picks up
-// a new file without restarting (see webmail.Certificate).
+// The webmail host certificate is managed apart from the mail host
+// certificates: it is only requested once the webmail DNS record points at
+// this server, a failure never touches the mail certificates, and core picks
+// up a new file without restarting (see webmail.Certificate).
 
 const (
 	webmailCertRenewBefore = 30 * 24 * time.Hour
 	webmailCertRetryAfter  = time.Hour
 )
 
-var webmailCertRetryAt sync.Map // hostname -> time.Time of the next attempt after a failure
+var webmailCertRetryAt time.Time // next attempt after a failure
 
 // webmailCertRemaining returns how long the stored webmail certificate is valid, 0 if missing.
 func webmailCertRemaining(host string) time.Duration {
@@ -39,10 +39,8 @@ func webmailCertRemaining(host string) time.Duration {
 	return time.Until(time.Unix(int64(endtime), 0))
 }
 
-// ApplyWebmailCert requests a Let's Encrypt certificate for webmail.<domain> over HTTP-01.
-func ApplyWebmailCert(ctx context.Context, domain string, accountInfo *model.Account) error {
-	host := public.FormatWebmail(domain)
-
+// ApplyWebmailCert requests a Let's Encrypt certificate for the webmail host over HTTP-01.
+func ApplyWebmailCert(ctx context.Context, host string, accountInfo *model.Account) error {
 	certificate, privateKey, err := acme.ApplySSLWithExistingServer(ctx, []string{host}, accountInfo.Email, "http", "", nil, "")
 	if err != nil {
 		return err
@@ -63,52 +61,40 @@ func ApplyWebmailCert(ctx context.Context, domain string, accountInfo *model.Acc
 	return os.WriteFile(crtPath, []byte(certificate), 0644)
 }
 
-// EnsureWebmailCerts issues missing webmail certificates and renews expiring ones.
-func EnsureWebmailCerts(ctx context.Context) {
-	ds, err := All(ctx)
-	if err != nil {
+// EnsureWebmailCert issues the webmail host certificate once its DNS points at
+// this server, and renews it before it expires.
+func EnsureWebmailCert(ctx context.Context) {
+	host := webmail.Host()
+	if host == "" || webmailCertRemaining(host) > webmailCertRenewBefore || time.Now().Before(webmailCertRetryAt) {
 		return
 	}
 
-	var account *model.Account
-
-	for _, d := range ds {
-		host := public.FormatWebmail(d.Domain)
-
-		if webmailCertRemaining(host) > webmailCertRenewBefore {
-			continue
-		}
-
-		if t, ok := webmailCertRetryAt.Load(host); ok && time.Now().Before(t.(time.Time)) {
-			continue
-		}
-
-		record, ok := public.GetCache(buildCacheKey(d.Domain, "WEBMAIL")).(v1.DNSRecord)
-		if !ok {
-			record, _ = GetWebmailRecord(d.Domain, true)
-		}
-		if !record.Valid {
-			continue
-		}
-
-		if account == nil {
-			account, err = adminAccount()
-			if err != nil {
-				g.Log().Warning(ctx, "[WebmailSSL] Failed to get admin account:", err)
-				return
-			}
-		}
-
-		g.Log().Info(ctx, "[WebmailSSL] Requesting certificate for", host)
-		if err = ApplyWebmailCert(ctx, d.Domain, account); err != nil {
-			webmailCertRetryAt.Store(host, time.Now().Add(webmailCertRetryAfter))
-			g.Log().Warningf(ctx, "[WebmailSSL] Certificate for %s failed, retry in %s: %v", host, webmailCertRetryAfter, err)
-			continue
-		}
-
-		webmailCertRetryAt.Delete(host)
-		g.Log().Info(ctx, "[WebmailSSL] Certificate issued for", host)
+	serverIP, err := public.GetServerIP()
+	if err != nil {
+		return
 	}
+	recordType := "A"
+	if strings.Contains(serverIP, ":") {
+		recordType = "AAAA"
+	}
+	if !ValidateARecord(v1.DNSRecord{Type: recordType, Host: host, Value: serverIP}) {
+		return
+	}
+
+	account, err := adminAccount()
+	if err != nil {
+		g.Log().Warning(ctx, "[WebmailSSL] Failed to get admin account:", err)
+		return
+	}
+
+	g.Log().Info(ctx, "[WebmailSSL] Requesting certificate for", host)
+	if err = ApplyWebmailCert(ctx, host, account); err != nil {
+		webmailCertRetryAt = time.Now().Add(webmailCertRetryAfter)
+		g.Log().Warningf(ctx, "[WebmailSSL] Certificate for %s failed, retry in %s: %v", host, webmailCertRetryAfter, err)
+		return
+	}
+
+	g.Log().Info(ctx, "[WebmailSSL] Certificate issued for", host)
 }
 
 // adminAccount returns the console admin account, used as the ACME account.

@@ -321,7 +321,7 @@
 			},
 			"step1": {
 				"title": "步骤1：添加A记录",
-				"description": "webmail 记录用于网页邮箱 https://webmail.<域名>/，解析到本服务器后会自动申请证书。"
+				"description": "webmail 记录是本服务器所有域名共用的网页邮箱地址，解析到本服务器后会自动申请证书。"
 			},
 			"step2": {
 				"title": "步骤2：添加MX记录",

@@ -4,7 +4,7 @@
 			<n-data-table size="small" class="mb-20px" :data="statusData" :columns="statusColumns">
 			</n-data-table>
 			<div class="record-title">{{ t('domain.dns.step1.title') }}</div>
-			<div class="record-desc">{{ t('domain.dns.step1.description') }}</div>
+			<div v-if="webmailHost" class="record-desc">{{ t('domain.dns.step1.description') }}</div>
 			<n-table size="small" class="mb-24px">
 				<thead>
 					<tr>
@@ -19,7 +19,7 @@
 						<td>{{ aHost }}</td>
 						<td>{{ aValue }}</td>
 					</tr>
-					<tr>
+					<tr v-if="webmailHost">
 						<td>A</td>
 						<td>{{ webmailHost }}</td>
 						<td>{{ webmailValue }}</td>
@@ -271,7 +271,9 @@ const statusColumns = ref<DataTableColumns<MailDomain>>([
 		title: 'Webmail',
 		render: row => {
 			const webmail = row.dns_records.webmail
-			return <StatusCol status={webmail?.valid || false}></StatusCol>
+			// Only the domain the shared webmail host belongs to has this record
+			if (!webmail?.host) return '-'
+			return <StatusCol status={webmail.valid}></StatusCol>
 		},
 	},
 ])

@@ -5,6 +5,7 @@ import (
 	"billionmail-core/internal/service/domains"
 	"billionmail-core/internal/service/mail_boxes"
 	"billionmail-core/internal/service/public"
+	"billionmail-core/internal/service/webmail"
 	"context"
 	"fmt"
 
@@ -35,6 +36,7 @@ func (c *ControllerV1) GetMailbox(ctx context.Context, req *v1.GetMailboxReq) (r
 		mailboxListWithMx[i] = v1.MailboxWithMxRecord{
 			Mailbox:  mailbox,
 			MxRecord: GenerateSPFRecord(mailbox.Domain), // 使用 GenerateSPFRecord 获取 MX 记录
+			Webmail:  webmail.URL(),
 		}
 		// Handle sensitive information
 		mailboxListWithMx[i].Password, _ = mail_boxes.PasswdDecode(ctx, mailboxListWithMx[i].PasswordEncode)

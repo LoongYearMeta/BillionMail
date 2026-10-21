@@ -83,6 +83,7 @@ type DeleteMailboxRes struct {
 type MailboxWithMxRecord struct {
 	Mailbox
 	MxRecord string `json:"mx" dc:"MX record for the domain"`
+	Webmail  string `json:"webmail" dc:"Webmail address"`
 }
 type GetMailboxReq struct {
 	g.Meta        `path:"/mailbox/list" tags:"MailBox" method:"get" summary:"Get mailbox" in:"query"`

@@ -10,6 +10,7 @@ import (
 	"billionmail-core/internal/service/mail_boxes"
 	"billionmail-core/internal/service/mail_service"
 	"billionmail-core/internal/service/public"
+	"billionmail-core/internal/service/webmail"
 	"context"
 	"database/sql"
 	"fmt"
@@ -764,14 +765,20 @@ func GetARecord(domain string, validateImmediate bool) (record v1.DNSRecord, err
 	return
 }
 
-// GetWebmailRecord retrieves the A record for webmail.<domain>, pointing at the server IP.
+// GetWebmailRecord retrieves the A record of the webmail host for the domain it
+// belongs to (webmail.example.com for example.com); other domains get none.
 func GetWebmailRecord(domain string, validateImmediate bool) (record v1.DNSRecord, err error) {
+	host := webmail.Host()
+	if host == "" || !strings.HasSuffix(host, "."+domain) {
+		return
+	}
+
 	record, err = GetARecord(domain, false)
 	if err != nil {
 		return
 	}
 
-	record.Host = public.FormatWebmail(domain)
+	record.Host = host
 
 	if validateImmediate {
 		record.Valid = ValidateARecord(record)

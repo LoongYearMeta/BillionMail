@@ -4,7 +4,7 @@ A self-hosted mail server for company domains, run with Docker Compose.
 
 - **Mail:** Postfix, Dovecot (IMAP/POP3) and Rspamd, with DKIM, SPF and DMARC records generated per domain.
 - **Console:** domains, mailboxes, DNS record checks, Let's Encrypt certificates, SMTP relays, delivery statistics, logs and settings.
-- **Webmail:** [alps](https://github.com/migadu/alps) at `https://webmail.<your-domain>/`.
+- **Webmail:** [alps](https://github.com/migadu/alps) at one address for all domains, `https://webmail.<your-domain>/` by default.
 - **Protection:** fail2ban rate limits on the console and webmail login limits.
 
 This is a fork of [aaPanel/BillionMail](https://github.com/aaPanel/BillionMail) reduced to company mail: the email marketing, templates, contacts, send API, AI and video features were removed.
@@ -49,7 +49,7 @@ Run these in the BillionMail directory.
 
 ## WebMail
 
-BillionMail ships with the [alps](https://github.com/migadu/alps) webmail at `https://webmail.<your-domain>/` for every mail domain. Point the `webmail` DNS record (shown with the domain's DNS records) at the server; the certificate is then issued automatically. Old `/roundcube/` links redirect there.
+BillionMail ships with the [alps](https://github.com/migadu/alps) webmail on one host shared by all mail domains; users sign in with their full address. The host is `WEBMAIL_HOST` in `.env`, by default derived from `BILLIONMAIL_HOSTNAME` (`mail.example.com` → `webmail.example.com`). Point its DNS A record (shown with the DNS records of the domain it belongs to) at the server; the certificate is then issued automatically. Old `/roundcube/` links redirect there.
 
 ## Issues
 

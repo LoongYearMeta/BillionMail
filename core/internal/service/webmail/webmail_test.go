@@ -18,23 +18,46 @@ import (
 	"time"
 )
 
-func TestIsWebmailHost(t *testing.T) {
-	domainExists = func(domain string) bool { return domain == "example.com" }
-	t.Cleanup(func() { hostCache.Clear() })
+func TestWebmailHost(t *testing.T) {
+	cases := []struct{ configured, mailHostname, want string }{
+		{"", "mail.example.com.my", "webmail.example.com.my"},
+		{"", "mail.turingbitchain.io", "webmail.turingbitchain.io"},
+		{"", "mx.example.org", "webmail.mx.example.org"},
+		{"Webmail.Corp.Example ", "mail.example.org", "webmail.corp.example"},
+		{"", "mail.example.com", ""},
+		{"", "", ""},
+	}
+	for _, c := range cases {
+		if got := webmailHost(c.configured, c.mailHostname); got != c.want {
+			t.Errorf("webmailHost(%q, %q) = %q, want %q", c.configured, c.mailHostname, got, c.want)
+		}
+	}
+}
 
+func setHost(t *testing.T, host string) {
+	old := Host
+	Host = func() string { return host }
+	t.Cleanup(func() { Host = old })
+}
+
+func TestIsWebmailHost(t *testing.T) {
+	setHost(t, "webmail.example.com")
 	cases := map[string]bool{
 		"webmail.example.com":     true,
 		"WEBMAIL.Example.com:443": true,
 		"webmail.other.com":       false,
 		"mail.example.com":        false,
-		"example.com":             false,
-		"webmail.":                false,
 		"1.2.3.4":                 false,
 	}
 	for host, want := range cases {
 		if got := IsWebmailHost(host); got != want {
 			t.Errorf("IsWebmailHost(%q) = %v, want %v", host, got, want)
 		}
+	}
+
+	setHost(t, "")
+	if IsWebmailHost("") || IsWebmailHost("webmail.example.com") || URL() != "" {
+		t.Error("an unconfigured webmail host must match nothing")
 	}
 }
 
@@ -126,12 +149,17 @@ func TestCertificateReloadsOnChange(t *testing.T) {
 	sslPath = t.TempDir()
 	t.Cleanup(func() { certCache.Clear() })
 	host := "webmail.example.com"
+	setHost(t, host)
 
 	if _, ok := Certificate(host); ok {
 		t.Fatal("expected no certificate before it is issued")
 	}
 	if _, ok := Certificate("mail.example.com"); ok {
 		t.Fatal("non-webmail hosts must not be served here")
+	}
+	writeCert(t, "webmail.other.com", 9)
+	if _, ok := Certificate("webmail.other.com"); ok {
+		t.Fatal("only the configured webmail host is served")
 	}
 
 	writeCert(t, host, 1)

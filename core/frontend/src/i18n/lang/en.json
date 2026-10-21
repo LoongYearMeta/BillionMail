@@ -318,7 +318,7 @@
 			},
 			"step1": {
 				"title": "Step 1: Add A Records",
-				"description": "The webmail record serves https://webmail.<domain>/. Its certificate is issued automatically once the record points to this server."
+				"description": "The webmail record serves the webmail for all domains on this server. Its certificate is issued automatically once the record points to this server."
 			},
 			"step2": {
 				"title": "Step 2: Add MX Record",

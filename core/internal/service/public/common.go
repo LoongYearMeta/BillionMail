@@ -2425,11 +2425,6 @@ func FormatMX(domain string) string {
 	return "mail." + strings.TrimPrefix(domain, "mail.")
 }
 
-// FormatWebmail returns the webmail hostname of a mail domain (e.g., webmail.example.com)
-func FormatWebmail(domain string) string {
-	return "webmail." + strings.TrimPrefix(domain, "webmail.")
-}
-
 // loadEnvFile .env
 func LoadEnvFile() (map[string]string, error) {
 	envPath := AbsPath("../.env")

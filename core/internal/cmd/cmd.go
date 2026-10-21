@@ -299,9 +299,9 @@ var (
 
 			// SPA fallback
 
-			// Webmail moved from /roundcube to webmail.<domain>, keep old links working
+			// Webmail moved from /roundcube to its own host, keep old links working
 			s.BindHandler("/roundcube/*any", func(r *ghttp.Request) {
-				if target, ok := webmail.RedirectURL(r.Host); ok {
+				if target := webmail.URL(); target != "" {
 					r.Response.RedirectTo(target, http.StatusFound)
 					return
 				}
@@ -485,7 +485,7 @@ var (
  </body>
 </html>`)
 
-			// Route webmail.<domain> to the webmail before any console routing,
+			// Route the webmail host to the webmail before any console routing,
 			// except ACME challenges, which issue the webmail certificates
 			webmailHandler := webmail.Handler()
 			s.SetHandler(func(w http.ResponseWriter, r *http.Request) {

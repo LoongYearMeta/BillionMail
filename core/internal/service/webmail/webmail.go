@@ -18,23 +18,11 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// The webmail (alps) only works at the root of an origin, so every mail domain
-// gets it on its own host, webmail.<domain>, on the same HTTPS port as the
-// console. core routes those hosts to the webmail container before GoFrame
-// routing, so the console's safe path, IP whitelist and handlers never apply.
-
-// domainExists reports whether domain is a configured mail domain.
-var domainExists = func(domain string) bool {
-	exists, _ := g.DB().Model("domain").Where("domain", domain).Exist()
-	return exists
-}
-
-type cachedBool struct {
-	value   bool
-	expires time.Time
-}
-
-var hostCache sync.Map // hostname -> cachedBool
+// The webmail (alps) only works at the root of an origin, so it gets one host
+// for all mail domains (users log in with their full address), on the same
+// HTTPS port as the console. core routes that host to the webmail container
+// before GoFrame routing, so the console's safe path, IP whitelist and
+// handlers never apply.
 
 func hostname(host string) string {
 	if h, _, err := net.SplitHostPort(host); err == nil {
@@ -43,21 +31,28 @@ func hostname(host string) string {
 	return strings.ToLower(strings.Trim(host, "[]"))
 }
 
-// IsWebmailHost reports whether the request host is webmail.<configured domain>.
+// webmailHost resolves the webmail host from WEBMAIL_HOST, or derives it from
+// BILLIONMAIL_HOSTNAME: mail.example.com -> webmail.example.com.
+func webmailHost(configured, mailHostname string) string {
+	if configured = hostname(strings.TrimSpace(configured)); configured != "" {
+		return configured
+	}
+	mailHostname = hostname(strings.TrimSpace(mailHostname))
+	if mailHostname == "" || mailHostname == "mail.example.com" {
+		return ""
+	}
+	return "webmail." + strings.TrimPrefix(mailHostname, "mail.")
+}
+
+// Host returns the webmail host, empty when the server is not configured yet.
+// Changing it in .env takes effect on the next core restart.
+var Host = sync.OnceValue(func() string {
+	return webmailHost(public.MustGetDockerEnv("WEBMAIL_HOST", ""), public.MustGetDockerEnv("BILLIONMAIL_HOSTNAME", ""))
+})
+
+// IsWebmailHost reports whether the request is addressed to the webmail host.
 func IsWebmailHost(host string) bool {
-	host = hostname(host)
-	domain, ok := strings.CutPrefix(host, "webmail.")
-	if !ok || domain == "" {
-		return false
-	}
-
-	if v, ok := hostCache.Load(host); ok && time.Now().Before(v.(cachedBool).expires) {
-		return v.(cachedBool).value
-	}
-
-	exists := domainExists(domain)
-	hostCache.Store(host, cachedBool{value: exists, expires: time.Now().Add(time.Minute)})
-	return exists
+	return Host() != "" && hostname(host) == Host()
 }
 
 // httpsPortSuffix is ":<port>" when the console HTTPS port is not 443.
@@ -69,25 +64,12 @@ var httpsPortSuffix = sync.OnceValue(func() string {
 	return ":" + port
 })
 
-// URL returns the webmail address of a mail domain.
-func URL(domain string) string {
-	return "https://" + public.FormatWebmail(domain) + httpsPortSuffix() + "/"
-}
-
-// RedirectURL maps a console host to the webmail of the same mail domain, for
-// old /roundcube links: mail.example.com -> https://webmail.example.com/.
-// Without a matching domain, it falls back to the only configured domain.
-func RedirectURL(host string) (string, bool) {
-	matched, err := g.DB().Model("domain").Where("a_record", hostname(host)).Fields("domain").Array()
-	if err == nil && len(matched) > 0 {
-		return URL(matched[0].String()), true
+// URL returns the webmail address, empty when the host is not configured.
+func URL() string {
+	if Host() == "" {
+		return ""
 	}
-
-	all, err := g.DB().Model("domain").Fields("domain").Array()
-	if err != nil || len(all) != 1 {
-		return "", false
-	}
-	return URL(all[0].String()), true
+	return "https://" + Host() + httpsPortSuffix() + "/"
 }
 
 // NewProxy forwards requests to the webmail backend. Client-supplied forwarding
@@ -154,7 +136,7 @@ var certCache sync.Map // hostname -> cachedCert
 // the file changes, so issuing or renewing it needs no core restart.
 func Certificate(serverName string) (*tls.Certificate, bool) {
 	host := hostname(serverName)
-	if !strings.HasPrefix(host, "webmail.") {
+	if !IsWebmailHost(host) {
 		return nil, false
 	}
 

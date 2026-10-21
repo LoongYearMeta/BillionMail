@@ -14,6 +14,7 @@ export interface MailBox {
 	is_admin: number
 	maildir: string
 	mx: string
+	webmail: string
 	quota: number
 	local_part: string
 	domain: string

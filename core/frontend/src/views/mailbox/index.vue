@@ -139,7 +139,7 @@ const columns = ref<DataTableColumns<MailBox>>([
 						onClick={() => {
 							copyText(
 								t('mailbox.loginInfo.template', {
-									webmail: `https://webmail.${row.domain}${window.location.port ? ':' + window.location.port : ''}/`,
+									webmail: row.webmail,
 									username: row.username,
 									password: row.password,
 									mx: row.mx,
