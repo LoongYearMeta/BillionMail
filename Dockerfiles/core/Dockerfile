@@ -7,9 +7,7 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
 
-# Platform-specific binary copy
-ARG TARGETARCH
-COPY core/billionmail-${TARGETARCH} /opt/billionmail/core/billionmail
+COPY core/billionmail /opt/billionmail/core/billionmail
 COPY core/manifest /opt/billionmail/core/manifest
 COPY core/languages /opt/billionmail/core/languages
 COPY core/public /opt/billionmail/core/public
