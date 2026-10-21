@@ -1,6 +1,8 @@
 package maillog_stat
 
 import (
+	"context"
+	"path/filepath"
 	"regexp"
 	"testing"
 	"time"
@@ -498,4 +500,19 @@ func TestMonthMap(t *testing.T) {
 		assert.Equal(t, num, ms.monthMap[month], "month %s", month)
 	}
 	assert.Len(t, ms.monthMap, 12)
+}
+
+func TestAnalysisAndSaveToDatabase_MissingMaillogReturns(t *testing.T) {
+	ms := newTestMaillogStat()
+	ms.maillogPath = filepath.Join(t.TempDir(), "mail.log")
+
+	done := make(chan error, 1)
+	go func() { done <- ms.AnalysisAndSaveToDatabase(context.Background()) }()
+
+	select {
+	case err := <-done:
+		assert.NoError(t, err)
+	case <-time.After(2 * time.Second):
+		t.Fatal("AnalysisAndSaveToDatabase blocked on a missing maillog")
+	}
 }

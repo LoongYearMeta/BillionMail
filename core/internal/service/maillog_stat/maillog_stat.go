@@ -646,6 +646,12 @@ func (ms *MaillogStat) AnalysisAndSaveToDatabase(ctx context.Context) error {
 		return err
 	}
 
+	// No maillog yet (fresh install or mid-rotation): ranging over the nil channel
+	// would block this handler forever and stop all later statistics
+	if recordChan == nil {
+		return nil
+	}
+
 	lastMaillogTime := GetLastMaillogTimeMillis()
 	sendRecords := make([]*MailSendRecord, 0, 256)
 	receiveRecords := make([]*MailReceiveRecord, 0, 256)
@@ -795,7 +801,15 @@ func NewMallogEventHandler(maillogPath string, delay time.Duration) *MallogEvent
 
 // Start starts the mail log event handler
 func (handler *MallogEventHandler) Start() {
-	_, err := gfsnotify.Add(filepath.Dir(handler.maillogStat.maillogPath), func(event *gfsnotify.Event) {
+	// On a fresh install core can start before Postfix has created its log directory,
+	// and the watcher would fail for good
+	logDir := filepath.Dir(handler.maillogStat.maillogPath)
+	if err := os.MkdirAll(logDir, 0755); err != nil {
+		g.Log().Error(context.Background(), "MallogEventHandler: error creating log directory", err)
+		return
+	}
+
+	_, err := gfsnotify.Add(logDir, func(event *gfsnotify.Event) {
 		// g.Log().Debug(context.Background(), "MallogEventHandler: catch event", event)
 
 		if event.IsWrite() {
