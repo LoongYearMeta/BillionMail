@@ -25,11 +25,11 @@
 
 <script lang="ts" setup>
 const handleGoIssues = () => {
-	window.open('https://github.com/aaPanel/BillionMail/issues')
+	window.open('https://github.com/LoongYearMeta/BillionMail/issues')
 }
 
 const handleGoStar = () => {
-	window.open('https://github.com/aaPanel/BillionMail')
+	window.open('https://github.com/LoongYearMeta/BillionMail')
 }
 </script>
 

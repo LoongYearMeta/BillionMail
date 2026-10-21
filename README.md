@@ -5,13 +5,6 @@
 
 ## An Open-Source MailServer, NewsLetter, Email Marketing Solution for Smarter Campaigns
 
-[![][license-shield]][license-link] [![][docs-shield]][docs-link] [![][github-release-shield]][github-release-link] [![][github-stars-shield]][github-stars-link]
-
-</div>
-<br/>
-
-<div align="center">
-<a href="https://trendshift.io/repositories/13842" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13842" alt="aaPanel%2FBillionMail | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </div>
 
 ## What is BillionMail?
@@ -52,15 +45,16 @@ See [Install with Docker Compose](#install-with-docker-compose).
 
 ## Install with Docker Compose
 
-BillionMail runs only with Docker Compose. You need Docker with the Compose plugin, and ports 25, 465, 587, 110, 995, 143, 993, 80 and 443 open.
+BillionMail runs only with Docker Compose. You need Docker with the Compose plugin, a fixed public IP, and ports 25, 465, 587, 110, 995, 143, 993, 80 and 443 open in your provider's firewall.
 
 ```shell
 git clone https://github.com/LoongYearMeta/BillionMail && cd BillionMail
 cp .env.example .env
 sed -i -e "s/^DBPASS=.*/DBPASS=$(openssl rand -hex 16)/" \
        -e "s/^REDISPASS=.*/REDISPASS=$(openssl rand -hex 16)/" .env
-# Set your mail hostname, e.g. mail.example.com
-sed -i "s/^BILLIONMAIL_HOSTNAME=.*/BILLIONMAIL_HOSTNAME=mail.example.com/" .env
+# Set your mail hostname and the server's public IP
+sed -i -e "s/^BILLIONMAIL_HOSTNAME=.*/BILLIONMAIL_HOSTNAME=mail.example.com/" \
+       -e "s/^SERVER_IP=.*/SERVER_IP=203.0.113.10/" .env
 docker compose up -d
 ```
 
@@ -131,10 +125,6 @@ If you encounter any issues or have feature requests, please [open an issue](htt
 - Steps to reproduce the issue (if applicable).
 - Screenshots or error logs (if applicable).
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=aapanel/billionmail&type=Date)](https://www.star-history.com/#aapanel/billionmail&Date)
-
 ## License
 
 BillionMail is licensed under the **AGPLv3 License**. This means you can:
@@ -144,21 +134,3 @@ BillionMail is licensed under the **AGPLv3 License**. This means you can:
 ✅ Use it privately without restrictions.
 
 See the [LICENSE](LICENSE) file for more details.
-
----
-
-<!-- BillionMail official link -->
-[docs-link]: https://www.billionmail.com/
-
-<!-- BillionMail Other link-->
-[license-link]: https://www.gnu.org/licenses/agpl-3.0.html
-[github-release-link]: https://github.com/aaPanel/BillionMail/releases/latest
-[github-stars-link]: https://github.com/aaPanel/BillionMail
-[github-issues-link]: https://github.com/aaPanel/BillionMail/issues
-
-<!-- Shield link-->
-[docs-shield]: https://img.shields.io/badge/documentation-148F76
-[github-release-shield]: https://img.shields.io/github/v/release/aaPanel/BillionMail
-[github-stars-shield]: https://img.shields.io/github/stars/aaPanel/BillionMail?color=%231890FF&style=flat-square   
-[license-shield]: https://img.shields.io/github/license/aaPanel/BillionMail
-

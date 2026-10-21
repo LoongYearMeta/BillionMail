@@ -68,7 +68,7 @@ const handleCollapse = () => {
 }
 
 const handleGoIssues = () => {
-	window.open('https://github.com/aaPanel/BillionMail/issues')
+	window.open('https://github.com/LoongYearMeta/BillionMail/issues')
 }
 
 const langOptions = ref<DropdownOption[]>([])
@@ -98,7 +98,7 @@ const handleUserAction = (key: string) => {
 }
 
 const handleGoVersion = () => {
-	window.open('https://github.com/aaPanel/BillionMail/releases')
+	window.open('https://github.com/LoongYearMeta/BillionMail/releases')
 }
 
 const getLangOptions = async () => {
