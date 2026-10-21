@@ -217,12 +217,6 @@ func validateConfigValue(key, value string) error {
 			return fmt.Errorf("port must be between 1-65535")
 		}
 
-	case "IPV4_NETWORK", "ipv4_network":
-		// IPv4 network: CIDR format
-		if !public.IsValidCIDR(value) {
-			return fmt.Errorf("IPv4 network format is incorrect, please use CIDR format (e.g. 192.168.1.0/24)")
-		}
-
 	case "TZ", "timezone":
 		// Timezone: check if it is a valid timezone
 		if !public.IsValidTimezone(value) {

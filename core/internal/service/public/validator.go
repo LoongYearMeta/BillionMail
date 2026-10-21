@@ -234,12 +234,6 @@ func IsValidHostname(hostname string) bool {
 	return true
 }
 
-// IsValidCIDR Check if it is a valid CIDR format
-func IsValidCIDR(cidr string) bool {
-	_, _, err := net.ParseCIDR(cidr)
-	return err == nil
-}
-
 // IsValidTimezone Check if it is a valid timezone
 func IsValidTimezone(tz string) bool {
 	_, err := time.LoadLocation(tz)

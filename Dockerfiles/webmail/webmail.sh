@@ -4,7 +4,7 @@ set -e
 # alps is only reachable inside billionmail-network. core terminates TLS for
 # webmail.<domain> and reverse-proxies here, so the docker subnet is the only
 # trusted proxy (needed for client IPs in rate limiting and the CSRF origin).
-TRUSTED_PROXY="${IPV4_NETWORK:-172.66.1}.0/24"
+TRUSTED_PROXY="${IPV4_NETWORK:-10.66.66}.0/24"
 
 # Optional Fernet key: keeps users logged in across container restarts.
 LOGIN_KEY_LINE=""

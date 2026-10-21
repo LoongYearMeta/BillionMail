@@ -52,6 +52,7 @@ services:
         - RETENTION_DAYS=${RETENTION_DAYS:-7}
       volumes:
         - ./conf/rspamd/local.d:/etc/rspamd/local.d
+        - ./conf/rspamd/override.d:/etc/rspamd/override.d
         - ./conf/rspamd/statistic.conf:/etc/rspamd/statistic.conf
         - ./conf/rspamd/rspamd.conf:/etc/rspamd/rspamd.conf 
         - ./rspamd-data:/var/lib/rspamd
@@ -153,7 +154,7 @@ services:
         - postfix-billionmail
       environment:
         - TZ=${TZ}
-        - IPV4_NETWORK=${IPV4_NETWORK:-172.66.1}
+        - IPV4_NETWORK=${IPV4_NETWORK:-10.66.66}
         - WEBMAIL_LOGIN_KEY=${WEBMAIL_LOGIN_KEY:-}
       restart: always
       networks:
@@ -207,5 +208,5 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: ${IPV4_NETWORK:-172.66.1}.0/24
+        - subnet: ${IPV4_NETWORK:-10.66.66}.0/24
 

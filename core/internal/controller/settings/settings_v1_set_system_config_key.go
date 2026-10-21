@@ -100,7 +100,6 @@ func convertJsonKeyToEnvKey(jsonKey string, value string, envMap map[string]stri
 		"http":                 "HTTP_PORT",
 		"https":                "HTTPS_PORT",
 		"timezone":             "TZ",
-		"ipv4_network":         "IPV4_NETWORK",
 		"fail2ban":             "FAIL2BAN_INIT",
 		"ip_whitelist_enable":  "IP_WHITELIST_ENABLE",
 		"retention_days":       "RETENTION_DAYS",
