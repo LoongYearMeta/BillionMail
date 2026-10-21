@@ -19,7 +19,7 @@ func (c *ControllerV1) CheckBlacklist(ctx context.Context, req *v1.CheckBlacklis
 		return nil, err
 	}
 	if ip == "127.0.0.1" {
-		ip, err = public.GetLocalIP()
+		ip, err = public.GetServerIP()
 		if err != nil {
 			ip = "127.0.0.1"
 		}

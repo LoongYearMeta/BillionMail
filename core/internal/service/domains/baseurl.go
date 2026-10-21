@@ -114,7 +114,7 @@ func buildBaseURL(hostname string) (s string) {
 		withPort = false
 	}
 
-	serverIP, localIP, err := public.GetServerIPAndLocalIP()
+	serverIP, err := public.GetServerIP()
 
 	if err != nil {
 		g.Log().Error(context.Background(), "failed to get server IP and local IP", err)
@@ -124,7 +124,7 @@ func buildBaseURL(hostname string) (s string) {
 	if appEnv, err := public.DockerEnv("APP_ENV"); err == nil && appEnv != "" {
 		switch appEnv {
 		case "development":
-			s = scheme + "://" + localIP
+			s = scheme + "://" + serverIP
 			if withPort {
 				s += ":" + gconv.String(serverPort)
 			}

@@ -148,12 +148,8 @@ func (sp *selfSignedCertProvider) generateCACertTemplate() *x509.Certificate {
 	cer := &x509.Certificate{
 		SerialNumber: big.NewInt(rd.Int63()), // Certificate serial number
 		Subject: pkix.Name{
-			Country:            []string{"HK"},
-			Organization:       []string{"aaPanel"},
-			OrganizationalUnit: []string{"aaPanel"},
-			Province:           []string{"HongKong"},
-			CommonName:         commonName,
-			Locality:           []string{"HongKong"},
+			Organization: []string{"BillionMail"},
+			CommonName:   commonName,
 		},
 		NotBefore:             time.Now(),                                                                 // Validity start time
 		NotAfter:              time.Now().AddDate(1, 0, 0),                                                // Validity end time
@@ -170,7 +166,7 @@ func (sp *selfSignedCertProvider) generateCACertTemplate() *x509.Certificate {
 // generateCertTemplate generates certificate template
 func (sp *selfSignedCertProvider) generateCertTemplate() *x509.Certificate {
 	// Get server IP
-	serverIp, localIp, err := GetServerIPAndLocalIP()
+	serverIp, err := GetServerIP()
 
 	if err != nil {
 		g.Log().Error(context.Background(), "Failed to get server IP:", err)
@@ -182,12 +178,8 @@ func (sp *selfSignedCertProvider) generateCertTemplate() *x509.Certificate {
 	cer := &x509.Certificate{
 		SerialNumber: big.NewInt(rd.Int63()), // Certificate serial number
 		Subject: pkix.Name{
-			Country:            []string{"HK"},
-			Organization:       []string{"aaPanel"},
-			OrganizationalUnit: []string{"aaPanel"},
-			Province:           []string{"HongKong"},
-			CommonName:         commonName,
-			Locality:           []string{"HongKong"},
+			Organization: []string{"BillionMail"},
+			CommonName:   commonName,
 		},
 		NotBefore:             time.Now(),                                                                 // Validity start time
 		NotAfter:              time.Now().AddDate(1, 0, 0),                                                // Validity end time
@@ -196,8 +188,8 @@ func (sp *selfSignedCertProvider) generateCertTemplate() *x509.Certificate {
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth}, // Certificate purposes
 		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageDataEncipherment,
 		EmailAddresses:        []string{"billionmail@aapanel.com"},
-		IPAddresses:           []net.IP{net.ParseIP(serverIp), net.ParseIP(localIp)}, // Supported IP addresses
-		DNSNames:              []string{},                                            // Supported domains
+		IPAddresses:           []net.IP{net.ParseIP(serverIp)}, // Supported IP addresses
+		DNSNames:              []string{},                      // Supported domains
 	}
 
 	return cer

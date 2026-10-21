@@ -2104,117 +2104,13 @@ func TimeCost() func() {
 	}
 }
 
-// GetServerIP retrieves the server's public IP address.
-func GetServerIP(force ...bool) (string, error) {
-	if len(force) > 0 && force[0] {
-		// Force refresh public IP
-		_, _ = Cache.Remove(Ctx, "ServerIP")
+// GetServerIP returns the public IP of this server, set by SERVER_IP in .env
+func GetServerIP() (string, error) {
+	serverIP := MustGetDockerEnv("SERVER_IP", "")
+	if !IsIpAddr(serverIP) {
+		return "", errors.New("SERVER_IP in .env is not a valid IP address: " + serverIP)
 	}
-
-	cachedServerIP, err := Cache.Get(Ctx, "ServerIP")
-
-	if err == nil && !cachedServerIP.IsEmpty() {
-		// Return cached public IP
-		return cachedServerIP.String(), nil
-	}
-
-	serverIP := ""
-
-	for i := 0; i < 2; i++ {
-		var resp *http.Response
-		resp, err = http.Get("https://ifconfig.me/ip")
-		if err != nil || i > 0 {
-			// Try alternative service
-			resp, err = http.Get("https://www.aapanel.com/api/common/getClientIP")
-			if err != nil {
-				return "", err
-			}
-		}
-
-		var ip []byte
-		ip, err = io.ReadAll(resp.Body)
-		if err != nil {
-			return "", err
-		}
-
-		_ = resp.Body.Close()
-
-		serverIP = strings.TrimSpace(string(ip))
-
-		// check ip format
-		if !IsIpAddr(serverIP) {
-			continue
-		}
-
-		break
-	}
-
-	if serverIP == "" || !IsIpAddr(serverIP) {
-		return "", err
-	}
-
-	// Cache the public IP address for 2 hours
-	if err = Cache.Set(Ctx, "ServerIP", serverIP, 2*time.Hour); err != nil {
-		g.Log().Warning(context.Background(), "Failed to cache server IP:", err)
-	}
-
 	return serverIP, nil
-}
-
-// GetLocalIP retrieves the server's local IP address.
-func GetLocalIP() (string, error) {
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		return "", err
-	}
-
-	localIp := ""
-
-	for _, addr := range addrs {
-		if ipNet, ok := addr.(*net.IPNet); ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil {
-			localIp = ipNet.IP.String()
-			break
-		}
-	}
-
-	if strings.HasPrefix(localIp, "172.") {
-		dk, err := docker.NewDockerAPI()
-
-		if err == nil {
-			defer dk.Close()
-			// If the local IP starts with 172., it may be a Docker container, so we try to get the host's IP
-			res, err := dk.ExecHostShellCommand(context.Background(), "ip addr | grep -E -o '[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}' | grep -E -v \"^127\\.|^255\\.|^0\\.\" | head -n 1")
-
-			if err == nil && res != nil {
-				res.Output = SanitizeIPChars(res.Output)
-
-				if IsIpAddr(res.Output) {
-					localIp = res.Output
-				}
-			}
-		}
-	}
-
-	if localIp != "" {
-		return localIp, nil
-	}
-
-	return "", errors.New("local IP not found")
-}
-
-// GetServerIPAndLocalIP retrieves the server's public and local IP addresses.
-func GetServerIPAndLocalIP() (string, string, error) {
-	publicIP, err := GetServerIP()
-	if err != nil {
-		return "", "", err
-	}
-
-	localIP, err := GetLocalIP()
-	if err != nil {
-		return "", "", err
-	}
-
-	return publicIP, localIP, nil
 }
 
 // Get server port
@@ -2265,132 +2161,6 @@ func PortInUse(port int) bool {
 	defer listener.Close()
 
 	return false
-}
-
-// Allow port
-func AllowPort(port int) (err error) {
-	// Check if port number is valid
-	if !IsPort(strconv.Itoa(port)) {
-		return errors.New("invalid port: " + strconv.Itoa(port))
-	}
-
-	defer func() {
-		if err == nil {
-			// Reload firewall
-			_ = ReloadFirewall()
-		}
-	}()
-
-	// Command line output
-	var s string
-
-	// Check if it is Ubuntu
-	if FileExists("/usr/sbin/ufw") || FileExists("/usr/bin/ufw") {
-		s, err = ExecShell(fmt.Sprintf("ufw allow %d/tcp", port))
-		if err != nil {
-			g.Log().Error(context.Background(), "AllowPort error: ", err, " ", s)
-		}
-
-		return
-	}
-
-	// Check if it is CentOS
-	if FileExists("/usr/sbin/firewalld") || FileExists("/usr/bin/firewalld") {
-		s, err = ExecShell(fmt.Sprintf("firewall-cmd --permanent --zone=public --add-port=%d/tcp", port))
-		if err != nil {
-			g.Log().Error(context.Background(), "AllowPort error: ", err, " ", s)
-			return
-		}
-	}
-
-	// Use iptables
-	s, err = ExecShell(fmt.Sprintf("iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport %d -j ACCEPT", port))
-	if err != nil {
-		g.Log().Error(context.Background(), "AllowPort error: ", err, " ", s)
-		return
-	}
-
-	return
-}
-
-// Deny port
-func DeniedPort(port int) (err error) {
-	// Check if port number is valid
-	if !IsPort(strconv.Itoa(port)) {
-		return errors.New("invalid port: " + strconv.Itoa(port))
-	}
-
-	defer func() {
-		if err == nil {
-			// Reload firewall
-			_ = ReloadFirewall()
-		}
-	}()
-
-	// Command line output
-	var s string
-
-	// Check if it is Ubuntu
-	if FileExists("/usr/sbin/ufw") || FileExists("/usr/bin/ufw") {
-		s, err = ExecShell(fmt.Sprintf("ufw delete allow %d/tcp", port))
-		if err != nil {
-			g.Log().Error(context.Background(), "DeniedPort error: ", err, " ", s)
-		}
-
-		return
-	}
-
-	// Check if it is CentOS
-	if FileExists("/usr/sbin/firewalld") || FileExists("/usr/bin/firewalld") {
-		s, err = ExecShell(fmt.Sprintf("firewall-cmd --permanent --zone=public --remove-port=%d/tcp", port))
-		if err != nil {
-			g.Log().Error(context.Background(), "DeniedPort error: ", err, " ", s)
-			return
-		}
-	}
-
-	// Use iptables
-	s, err = ExecShell(fmt.Sprintf("iptables -D INPUT -p tcp -m state --state NEW -m tcp --dport %d -j ACCEPT", port))
-	if err != nil {
-		g.Log().Error(context.Background(), "DeniedPort error: ", err, " ", s)
-		return
-	}
-
-	return
-}
-
-// Reload firewall
-func ReloadFirewall() (err error) {
-	// Command line output
-	var s string
-
-	// Check if it is Ubuntu
-	if FileExists("/usr/sbin/ufw") || FileExists("/usr/bin/ufw") {
-		s, err = ExecShell("ufw reload")
-		if err != nil {
-			g.Log().Error(context.Background(), "ReloadFirewall error: ", err, " ", s)
-		}
-
-		return
-	}
-
-	// Check if it is CentOS
-	if FileExists("/usr/sbin/firewalld") || FileExists("/usr/bin/firewalld") {
-		s, err = ExecShell("firewall-cmd --reload")
-		if err != nil {
-			g.Log().Error(context.Background(), "ReloadFirewall error: ", err, " ", s)
-			return
-		}
-	}
-
-	// Use iptables
-	s, err = ExecShell("/etc/init.d/iptables save && /etc/init.d/iptables restart")
-	if err != nil {
-		g.Log().Error(context.Background(), "ReloadFirewall error: ", err, " ", s)
-		return
-	}
-
-	return
 }
 
 // DockerApiFromCtx Get Docker API from context
@@ -2730,7 +2500,7 @@ func GethostUrl() string {
 		withPort = false
 	}
 
-	serverIP, localIP, err := GetServerIPAndLocalIP()
+	serverIP, err := GetServerIP()
 	if err != nil {
 		return ""
 	}
@@ -2738,7 +2508,7 @@ func GethostUrl() string {
 	if appEnv, err := DockerEnv("APP_ENV"); err == nil && appEnv != "" {
 		switch appEnv {
 		case "development":
-			hostUrl := scheme + "://" + localIP
+			hostUrl := scheme + "://" + serverIP
 			if withPort {
 				hostUrl += ":" + fmt.Sprintf("%d", serverPort)
 			}
