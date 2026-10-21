@@ -2,7 +2,7 @@ name: billionmail
 
 services:
     pgsql-billionmail:
-      image: postgres:17.4-alpine
+      image: postgres:17.11-alpine
       hostname: pgsql
       volumes:
         - ./postgresql-data:/var/lib/postgresql/data
@@ -21,7 +21,7 @@ services:
             - pgsql
 
     redis-billionmail:
-      image: redis:7.4.2-alpine
+      image: redis:7.4.11-alpine
       hostname: redis
       entrypoint: ["/bin/sh","/redis-conf.sh"]
       volumes:
