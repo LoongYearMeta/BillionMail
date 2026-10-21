@@ -47,7 +47,7 @@ func init() {
 			`-- Domain to SMTP service name mapping table
 			CREATE TABLE IF NOT EXISTS  bm_domain_smtp_transport(
 			id BIGSERIAL PRIMARY KEY,
-			atype varchar(50) NOT NULL DEFAULT 'relay', -- Transport type,  "relay"   "dedicated_ip"
+			atype varchar(50) NOT NULL DEFAULT 'relay', -- Transport type, e.g. "relay"
 			domain varchar(255) NOT NULL,  -- Sender domain, e.g. "@example.com"
 			smtp_name varchar(255) NOT NULL, -- SMTP service name, e.g. "smtp_Relay_mail_xxxx_cn_gwt3_6_pvz_6"
 			unique(domain)

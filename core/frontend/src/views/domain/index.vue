@@ -26,7 +26,6 @@
 				<form-modal />
 				<ssl-modal />
 				<dns-modal />
-				<domain-ip-set-modal />
 				<blacklist-modal />
 				<check-logs-modal />
 			</template>
@@ -45,8 +44,6 @@ import type { MailDomain, MailDomainParams } from './interface'
 import DomainForm from './components/DomainForm.vue'
 import DomainSsl from './components/DomainSsl/index.vue'
 import DomainDns from './components/DomainDns.vue'
-import DomainIpSet from './components/DomainIpSet.vue'
-import IpStatus from './components/IpStatus.vue'
 import NotSpam from './components/NotSpam.vue'
 import BlacklistDetection from './components/BlacklistDetection.vue'
 import CheckLogs from './components/CheckLogs.vue'
@@ -148,25 +145,6 @@ const columns = ref<DataTableColumns<MailDomain>>([
 	// 		/>
 	// 	),
 	// },
-	{
-		key: 'multi_ip_domains',
-		title: t('domain.columns.dedicatedIp'),
-		render: row => {
-			if (row.multi_ip_domains) {
-				return (
-					<div
-						class="flex items-center cursor-pointer"
-						onClick={() => {
-							handleMultiIpDomains(row)
-						}}>
-						<span class="leading-14px mr-6px">{row.multi_ip_domains.outbound_ip}</span>
-						<IpStatus status={row.multi_ip_domains.status}></IpStatus>
-					</div>
-				)
-			}
-			return '--'
-		},
-	},
 	{
 		key: 'ssl',
 		title: 'SSL',
@@ -315,16 +293,6 @@ const handleEdit = (row: MailDomain) => {
 			domain: row.domain,
 		},
 	})
-}
-
-const [DomainIpSetModal, domainIpSetModalApi] = useModal({
-	component: DomainIpSet,
-})
-
-// Handle multi ip domains
-const handleMultiIpDomains = (row: MailDomain) => {
-	domainIpSetModalApi.setState({ row })
-	domainIpSetModalApi.open()
 }
 
 // Handle delete

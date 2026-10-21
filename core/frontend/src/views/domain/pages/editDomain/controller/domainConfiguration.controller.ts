@@ -33,7 +33,6 @@ import { MailDomain } from '@/views/domain/interface'
 export async function getDomainDetail(domain: string) {
 	const {
 		domainTit,
-		domainIp,
 		hostname,
 		quota,
 		unit,
@@ -51,7 +50,6 @@ export async function getDomainDetail(domain: string) {
 			const { list } = res
 			const quotaAndUnit = getByteUnit(list[0].quota, true, 2).split(' ')
 			domainTit.value = list[0].domain
-			domainIp.value = list[0].multi_ip_domains?.outbound_ip || ''
 			hostname.value = list[0].a_record
 			quota.value = quotaAndUnit[0]
 			unit.value = quotaAndUnit[1]
@@ -87,39 +85,12 @@ export async function configurationStatus(domain: string) {
 	}
 }
 
-export async function testConnection() {
-	const { domainTit, domainIp } = getEditDomainStoreData()
-	if (domainIp.value == '') {
-		Message.error(i18n.global.t('domain.edit.domainConfiguration.validation.setDedicatedIpFirst'))
-		return
-	}
-
-	try {
-		await instance.post(
-			'/multi_ip_domain/test',
-			{
-				domain: domainTit.value,
-				outbound_ip: domainIp.value,
-			},
-			{
-				fetchOptions: {
-					loading: i18n.global.t('domain.edit.domainConfiguration.api.testingConnection'),
-					successMessage: true,
-				},
-			}
-		)
-	} catch (error) {
-		console.warn(error)
-	}
-}
-
 /**
  * @description Update domain
  */
 export async function updateDomain() {
 	const {
 		domainTit,
-		domainIp,
 		hostname,
 		quota,
 		unit,
@@ -144,7 +115,6 @@ export async function updateDomain() {
 				active: 1,
 				email: catch_email.value,
 				urls: urls.value,
-				outbound_ip: domainIp.value,
 				hostname: hostname.value,
 			},
 			instanceOptions

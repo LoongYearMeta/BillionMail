@@ -808,24 +808,7 @@
 			"quota": "配额",
 			"mailboxes": "邮箱数量",
 			"defaultMailboxSize": "默认邮箱大小",
-			"dedicatedIp": "专用IP",
 			"actions": "操作"
-		},
-		"ipSet": {
-			"title": "专用IP设置",
-			"titleWithDomain": "专用IP设置【{domain}】",
-			"dedicatedIp": "专用IP：",
-			"configFile": "配置文件：",
-			"connectionStatus": "连接状态：",
-			"warning": "你可以通过手工在SSH终端执行以下命令使专用IP连接状态激活\n如果你有多个域名需要配置专用IP，我们建议你先把所有域名配\n置完成后在执行以下命令，避免邮件服务器多次中断",
-			"getCommand": "获取命令",
-			"copyCommand": "复制命令",
-			"operationReminder": "操作提醒",
-			"fixCommandTip": "如果执行命令失败，您可以执行该命令进行修复：",
-			"understood": "我知道了",
-			"validation": {
-				"getCommandFirst": "请先获取命令"
-			}
 		},
 		"status": {
 			"default": "默认"
@@ -879,9 +862,7 @@
 			"globalCatch": "Catch All",
 			"globalCatchPlaceholder": "捕获不存在的邮件，转发至此邮件",
 			"validation": {
-				"domainRequired": "邮箱域名不能为空!",
-				"domainInputRequired": "请先输入域名",
-				"dedicatedIpRequired": "请先输入域名专用IP"
+				"domainRequired": "邮箱域名不能为空!"
 			},
 			"tips": {
 				"aRecordFailed": "提示A记录解析失败。请检查填写的A记录域名是否已解析到服务器 IP",
@@ -904,9 +885,7 @@
 			"noBrandInfo": "暂无品牌信息",
 			"fillDomain": "请填写域名",
 			"fillValidDomain": "请填写正确的域名",
-			"dedicatedIp": "域名专用IP",
-			"notSet": "未设置",
-			"testConnection": "连接测试"
+			"notSet": "未设置"
 		},
 		"dns": {
 			"title": "DNS 记录",
@@ -1016,19 +995,9 @@
 				"noBrandInfo": "No brand information available.",
 				"fillDomain": "请填写域名",
 				"fillValidDomain": "请填写有效的域名",
-				"dedicatedIp": "域名专用IP",
-				"dedicatedIpDesc": "域名 {domain} 发送和接受邮件时会在iptables处指定此专属IP，如果你的服务器只有一个IP的话不需要设置此功能",
-				"notSet": "未设置",
-				"testConnection": "连接测试",
 				"catchAllDesc": "在您这里填写邮箱后，这个域名下所有未知的邮箱收到邮件将会转发到这个邮箱里面",
 				"domainQuotaDesc": "设置此域名的可用空间",
-				"mailboxCountDesc": "设置此域名可以创建多少个邮箱",
-				"validation": {
-					"setDedicatedIpFirst": "请先设置域名专用IP"
-				},
-				"api": {
-					"testingConnection": "正在测试连接中，请稍候..."
-				}
+				"mailboxCountDesc": "设置此域名可以创建多少个邮箱"
 			},
 			"projectDetails": {
 				"title": "项目详情",
@@ -1123,7 +1092,6 @@
 				"applyingCert": "正在申请证书，请稍候...",
 				"settingDefault": "正在设置默认域名，请稍候...",
 				"settingBrandInfo": "正在设置域名品牌信息，请稍候...",
-				"testingConnection": "正在测试连接，请稍候...",
 				"detecting": "正在检测，请稍候..."
 			}
 		}

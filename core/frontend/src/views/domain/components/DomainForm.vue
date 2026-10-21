@@ -40,15 +40,6 @@
 						:show-button="false">
 					</n-input-number>
 				</n-form-item>
-				<n-form-item :label="$t('domain.form.dedicatedIp')">
-					<div class="flex-1 mr-16px">
-						<n-input v-model:value="form.outbound_ip" :placeholder="$t('domain.form.notSet')">
-						</n-input>
-					</div>
-					<n-button type="primary" ghost @click="onTestConnection">
-						{{ $t('domain.form.testConnection') }}
-					</n-button>
-				</n-form-item>
 				<n-form-item label="Hostname" path="hostname">
 					<n-input v-model:value="form.hostname" :placeholder="$t('domain.form.notSet')"> </n-input>
 				</n-form-item>
@@ -131,14 +122,13 @@
 import WaitAndCheckDomainStatus from './WaitAndCheckDomainStatus.vue'
 import { FormRules } from 'naive-ui'
 import { useGlobalStore } from '@/store'
-import { getByteUnit, getNumber, Message } from '@/utils'
+import { getByteUnit, getNumber } from '@/utils'
 import { useModal } from '@/hooks/modal/useModal'
 import {
 	createDomain,
 	initAiConfiguration,
 	updateDomain,
 	checkAiConfiguration,
-	testConnection,
 } from '@/api/modules/domain'
 import type { MailDomain } from '../interface'
 import router from '@/router'
@@ -169,7 +159,6 @@ const form = reactive({
 	quota: 5,
 	quota_unit: 'GB',
 	mailboxes: 50,
-	outbound_ip: '',
 	email: '',
 })
 
@@ -233,24 +222,6 @@ const removeUrl = (index: number) => {
 	urls.value.splice(index, 1)
 }
 
-/**
- * @description Test connection
- */
-const onTestConnection = async () => {
-	if (form.domain == '') {
-		Message.error(t('domain.form.validation.domainInputRequired'))
-		return
-	}
-	if (form.outbound_ip == '') {
-		Message.error(t('domain.form.validation.dedicatedIpRequired'))
-		return
-	}
-	await testConnection({
-		domain: form.domain,
-		outbound_ip: form.outbound_ip,
-	})
-}
-
 const [Modal, modalApi] = useModal({
 	onChangeState: async isOpen => {
 		if (isOpen) {
@@ -277,7 +248,6 @@ const [Modal, modalApi] = useModal({
 			form.quota_unit = 'GB'
 			form.mailboxes = 50
 			form.email = ''
-			form.outbound_ip = ''
 			urls.value = ['https://']
 		}
 	},
@@ -290,7 +260,6 @@ const [Modal, modalApi] = useModal({
 				mailboxes: form.mailboxes,
 				email: form.email,
 				urls: urls.value,
-				outbound_ip: form.outbound_ip,
 				hostname: form.hostname,
 			})
 		} else {
@@ -301,7 +270,6 @@ const [Modal, modalApi] = useModal({
 				email: form.email,
 				urls: urls.value,
 				hasbrandinfo: Number(initAi.value),
-				outbound_ip: form.outbound_ip,
 				hostname: form.hostname,
 			})
 

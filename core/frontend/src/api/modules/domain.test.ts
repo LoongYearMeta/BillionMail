@@ -19,7 +19,6 @@ vi.mock('@/i18n', () => ({
 import {
   getDomainList,
   getDomainAll,
-  getDomainIpCommand,
   createDomain,
   updateDomain,
   deleteDomain,
@@ -29,7 +28,6 @@ import {
   applyCert,
   setDefaultDomain,
   initAiConfiguration,
-  testConnection,
   checkAiConfiguration,
   checkDomainBlacklist,
   getCheckLogs,
@@ -51,11 +49,6 @@ describe('domain API', () => {
     expect(mockGet).toHaveBeenCalledWith('/domains/all')
   })
 
-  it('getDomainIpCommand calls POST /multi_ip_domain/apply', () => {
-    getDomainIpCommand()
-    expect(mockPost).toHaveBeenCalledWith('/multi_ip_domain/apply')
-  })
-
   it('createDomain calls POST /domains/create with fetchOptions', () => {
     const params = {
       domain: 'test.com',
@@ -64,7 +57,6 @@ describe('domain API', () => {
       email: 'a@test.com',
       urls: [],
       hostname: 'mail.test.com',
-      outbound_ip: '1.2.3.4',
     }
     createDomain(params)
     expect(mockPost).toHaveBeenCalledWith('/domains/create', params, expect.objectContaining({
@@ -83,7 +75,6 @@ describe('domain API', () => {
       email: 'b@test.com',
       urls: [],
       hostname: 'mail.test.com',
-      outbound_ip: '1.2.3.4',
     }
     updateDomain(params)
     expect(mockPost).toHaveBeenCalledWith('/domains/update', params, expect.objectContaining({
@@ -126,12 +117,6 @@ describe('domain API', () => {
     const params = { domain: 'test.com', urls: ['https://example.com'] }
     initAiConfiguration(params)
     expect(mockPost).toHaveBeenCalledWith('/askai/project/create', params, expect.any(Object))
-  })
-
-  it('testConnection calls POST /multi_ip_domain/test', () => {
-    const params = { domain: 'test.com', outbound_ip: '1.2.3.4' }
-    testConnection(params)
-    expect(mockPost).toHaveBeenCalledWith('/multi_ip_domain/test', params, expect.any(Object))
   })
 
   it('checkAiConfiguration calls POST /askai/supplier/status', () => {

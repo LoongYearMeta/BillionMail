@@ -15,26 +15,6 @@
 					<n-form-item :label="$t('domain.edit.domainConfiguration.domain')">
 						<n-input v-model:value="domainTit" :disabled="true" @input="syncToUrl"></n-input>
 					</n-form-item>
-					<n-form-item :label="$t('domain.edit.domainConfiguration.dedicatedIp')">
-						<div class="flex-1">
-							<div class="mb-12px text-desc">
-								*
-								{{
-									$t('domain.edit.domainConfiguration.dedicatedIpDesc', { domain: 'aapanel.com' })
-								}}
-							</div>
-							<div class="flex gap-16px">
-								<div class="flex-1">
-									<n-input
-										v-model:value="domainIp"
-										:placeholder="$t('domain.edit.domainConfiguration.notSet')"></n-input>
-								</div>
-								<n-button type="primary" ghost @click="testConnection">{{
-									$t('domain.edit.domainConfiguration.testConnection')
-								}}</n-button>
-							</div>
-						</div>
-					</n-form-item>
 					<n-form-item label="Hostname">
 						<n-input v-model:value="hostname"></n-input>
 					</n-form-item>
@@ -178,7 +158,6 @@ import {
 	createBrandInfo,
 	switchBrandInfo,
 	updateDomain,
-	testConnection,
 } from '../controller/domainConfiguration.controller'
 import { getEditDomainStoreData } from '../store'
 
@@ -188,7 +167,6 @@ const supplierStatus = ref(false)
 
 const {
 	domainTit,
-	domainIp,
 	hostname,
 	quota,
 	unit,

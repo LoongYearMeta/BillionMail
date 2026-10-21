@@ -9,7 +9,6 @@ import (
 	docker "billionmail-core/internal/service/dockerapi"
 	"billionmail-core/internal/service/mail_boxes"
 	"billionmail-core/internal/service/mail_service"
-	"billionmail-core/internal/service/multi_ip_domain"
 	"billionmail-core/internal/service/public"
 	"context"
 	"database/sql"
@@ -216,27 +215,6 @@ func Get(ctx context.Context, keyword string, page, pageSize int) ([]v1.Domain, 
 	if err == nil && val != nil {
 		defaultDomain = val.String()
 	}
-	MultiIPDomainConfigs, err := multi_ip_domain.MultiIPDomainServiceInstance.GetConfigs(ctx)
-
-	// 创建域名到专属IP配置的映射
-	multiIPMap := make(map[string][]v1.MultiIPDomain)
-	for _, config := range MultiIPDomainConfigs {
-		multiIPMap[config.Domain] = append(multiIPMap[config.Domain], v1.MultiIPDomain{
-			ID:             config.ID,
-			Domain:         config.Domain,
-			OutboundIP:     config.OutboundIP,
-			NetworkName:    config.NetworkName,
-			Subnet:         config.Subnet,
-			PostfixIP:      config.PostfixIP,
-			Aliases:        config.Aliases,
-			SMTPServerName: config.SMTPServerName,
-			Active:         config.Active,
-			CreateTime:     config.CreateTime,
-			UpdateTime:     config.UpdateTime,
-			Status:         config.Status,
-		})
-	}
-
 	crt := mail_service.NewCertificate()
 
 	defer crt.Close()
@@ -249,21 +227,10 @@ func Get(ctx context.Context, keyword string, page, pageSize int) ([]v1.Domain, 
 		} else {
 			domains[i].Default = 0
 		}
-		// 补充专属ip信息
-		if multiIPConfigs, exists := multiIPMap[domain.Domain]; exists && len(multiIPMap) > 0 {
-			domains[i].MultiIPDomains = &multiIPConfigs[0]
-		} else {
-			domains[i].MultiIPDomains = nil
-		}
-
 		wg.Add(1)
 		go func(i int, domain v1.Domain) {
 			defer wg.Done()
-			dedicatedIP := ""
-			if domain.MultiIPDomains != nil {
-				dedicatedIP = domain.MultiIPDomains.OutboundIP
-			}
-			domains[i].DNSRecords = GetRecordsInCache(strings.TrimPrefix(domain.Domain, "mail."), dedicatedIP)
+			domains[i].DNSRecords = GetRecordsInCache(strings.TrimPrefix(domain.Domain, "mail."))
 		}(i, domain)
 
 		// Retrieve Domains SSL certificate information
@@ -433,7 +400,7 @@ func FreshRecords(ctx context.Context, domain ...string) {
 		// retrieve A record
 		go func(d string) {
 			defer wg.Done()
-			dr, err := GetARecord(d, true, "")
+			dr, err := GetARecord(d, true)
 			if err != nil {
 				g.Log().Error(ctx, "Failed to get A record for domain %s: %v", d, err)
 			} else {
@@ -770,15 +737,11 @@ func GetMXRecord(domain string, validateImmediate bool) (record v1.DNSRecord, er
 }
 
 // GetARecord retrieves the A record for a given domain.
-// If dedicatedIP is non-empty, it is used instead of the server's default IP.
-func GetARecord(domain string, validateImmediate bool, dedicatedIP string) (record v1.DNSRecord, err error) {
-	ip := dedicatedIP
-	if ip == "" {
-		ip, err = public.GetServerIP()
-		if err != nil {
-			err = fmt.Errorf("Failed to get server IP: %v", err)
-			return
-		}
+func GetARecord(domain string, validateImmediate bool) (record v1.DNSRecord, err error) {
+	ip, err := public.GetServerIP()
+	if err != nil {
+		err = fmt.Errorf("Failed to get server IP: %v", err)
+		return
 	}
 
 	recordType := "A"
@@ -801,10 +764,9 @@ func GetARecord(domain string, validateImmediate bool, dedicatedIP string) (reco
 	return
 }
 
-// GetWebmailRecord retrieves the A record for webmail.<domain>. It always points
-// at the server IP: the webmail is served by core, not by a dedicated sending IP.
+// GetWebmailRecord retrieves the A record for webmail.<domain>, pointing at the server IP.
 func GetWebmailRecord(domain string, validateImmediate bool) (record v1.DNSRecord, err error) {
-	record, err = GetARecord(domain, false, "")
+	record, err = GetARecord(domain, false)
 	if err != nil {
 		return
 	}
@@ -842,20 +804,16 @@ func GetPTRRecord(domain string, validateImmediate bool) (record v1.DNSRecord, e
 }
 
 // GetRecordsInCache retrieves DNS records from the cache for a given domain.
-// If dedicatedIP is non-empty, the A record uses that IP instead of the server default.
-func GetRecordsInCache(domain string, dedicatedIP string) (records v1.DNSRecords) {
-	// Get A record — bypass cache when a dedicated IP is set
-	if dedicatedIP != "" {
-		records.A, _ = GetARecord(domain, false, dedicatedIP)
-	} else {
-		aRecord := public.GetCache(buildCacheKey(domain, "A"))
-		if aRecord != nil {
-			if v, ok := aRecord.(v1.DNSRecord); ok {
-				records.A = v
-			}
-		} else {
-			records.A, _ = GetARecord(domain, false, "")
+func GetRecordsInCache(domain string) (records v1.DNSRecords) {
+	// Get A record from cache
+	aRecord := public.GetCache(buildCacheKey(domain, "A"))
+
+	if aRecord != nil {
+		if v, ok := aRecord.(v1.DNSRecord); ok {
+			records.A = v
 		}
+	} else {
+		records.A, _ = GetARecord(domain, false)
 	}
 
 	// Get MX record from cache

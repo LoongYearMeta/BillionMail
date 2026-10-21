@@ -781,13 +781,7 @@
 			"quota": "クォータ",
 			"mailboxes": "メールボックス",
 			"defaultMailboxSize": "デフォルトメールボックスサイズ",
-			"dedicatedIp": "専用IP",
 			"notSet": "未設定",
-			"testConnection": "接続テスト",
-			"validation": {
-				"domainInputRequired": "まずドメインを入力してください",
-				"dedicatedIpRequired": "まず専用IPを入力してください"
-			},
 			"actions": "操作"
 		},
 		"status": {
@@ -903,22 +897,6 @@
 				"defaultSite": "SSL デフォルトサイトが指定されていない場合、SSL 未設定サイトは SSL 設定済みサイトの HTTPS を使用します"
 			}
 		},
-		"ipSet": {
-			"title": "専用IP設定",
-			"titleWithDomain": "専用IP設定【{domain}】",
-			"dedicatedIp": "専用IP：",
-			"configFile": "設定ファイル：",
-			"connectionStatus": "接続状態：",
-			"warning": "SSHターミナルで以下のコマンドを手動実行することで専用IP接続状態をアクティブにできます\n複数のドメインで専用IPを設定する場合は、すべてのドメインを設定してからコマンドを実行することをお勧めします。メールサーバーの中断を避けるためです",
-			"getCommand": "コマンド取得",
-			"copyCommand": "コマンドコピー",
-			"operationReminder": "操作リマインダー",
-			"fixCommandTip": "コマンドの実行に失敗した場合、このコマンドを実行して修復できます：",
-			"understood": "了解しました",
-			"validation": {
-				"getCommandFirst": "まずコマンドを取得してください"
-			}
-		},
 		"notSpam": {
 			"checkNow": "今すぐチェック",
 			"logs": "ログ"
@@ -947,7 +925,6 @@
 				"applyingCert": "証明書を申請中です、しばらくお待ちください...",
 				"settingDefault": "デフォルトドメインを設定中です、しばらくお待ちください...",
 				"settingBrandInfo": "ドメインブランド情報を設定中です、しばらくお待ちください...",
-				"testingConnection": "接続をテスト中です、しばらくお待ちください...",
 				"detecting": "検出中です、しばらくお待ちください..."
 			}
 		},
@@ -974,19 +951,9 @@
 				"domainQuota": "ドメインクォータ",
 				"mailboxCount": "メールボックス数",
 				"catchAll": "Catch all",
-				"dedicatedIp": "ドメイン専用IP",
-				"dedicatedIpDesc": "ドメイン {domain} がメールを送受信する際、iptablesでこの専用IPを指定します。サーバーにIPが1つしかない場合は、この機能を設定する必要はありません",
-				"notSet": "未設定",
-				"testConnection": "接続テスト",
 				"catchAllDesc": "ここにメールアドレスを入力すると、このドメインの未知のメールアドレスに送信されたメールがすべてこのメールアドレスに転送されます",
 				"domainQuotaDesc": "このドメインの利用可能容量を設定",
-				"mailboxCountDesc": "このドメインで作成できるメールボックス数を設定",
-				"validation": {
-					"setDedicatedIpFirst": "まずドメイン専用IPを設定してください"
-				},
-				"api": {
-					"testingConnection": "接続をテスト中です、しばらくお待ちください..."
-				}
+				"mailboxCountDesc": "このドメインで作成できるメールボックス数を設定"
 			},
 			"save": "保存",
 			"from": "送信元",
