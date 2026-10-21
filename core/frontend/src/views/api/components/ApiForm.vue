@@ -157,12 +157,9 @@ const handlePreviewTemplate = (html: string) => {
 const handleEditTemplate = async () => {
 	const res = await getTemplateDetails({ id: `${form.template_id}` })
 	if (isObject<Template>(res)) {
-		if (res.add_type == 2 && res.chat_id) {
-			window.open(`/template/ai-template/${res.chat_id}`)
-		} else {
-			formModalApi.setState({ isEdit: true, row: res })
-			formModalApi.open()
-		}
+		// Templates made by the removed AI generator are edited as HTML
+		formModalApi.setState({ isEdit: true, row: res.add_type == 2 ? { ...res, add_type: 0 } : res })
+		formModalApi.open()
 	}
 }
 

@@ -15,7 +15,6 @@ type IDomainsV1 interface {
 	GetBlocklistCheckLogs(ctx context.Context, req *v1.GetBlocklistCheckLogsReq) (res *v1.GetBlocklistCheckLogsRes, err error)
 	AddDomain(ctx context.Context, req *v1.AddDomainReq) (res *v1.AddDomainRes, err error)
 	UpdateDomain(ctx context.Context, req *v1.UpdateDomainReq) (res *v1.UpdateDomainRes, err error)
-	UpdateDomainBrandinfo(ctx context.Context, req *v1.UpdateDomainBrandinfoReq) (res *v1.UpdateDomainBrandinfoRes, err error)
 	DeleteDomain(ctx context.Context, req *v1.DeleteDomainReq) (res *v1.DeleteDomainRes, err error)
 	GetDomain(ctx context.Context, req *v1.GetDomainReq) (res *v1.GetDomainRes, err error)
 	GetDomainAll(ctx context.Context, req *v1.GetDomainAllReq) (res *v1.GetDomainAllRes, err error)

@@ -15,10 +15,8 @@ export interface MailDomain {
 	active: number
 	default: number
 	email: string
-	hasbrandinfo: number
 	current_usage: number
 	black_check_log: string
-	urls: string[]
 	dns_records: DomainDnsRecords
 	cert_info: DomainCertInfo
 	black_check_result: DomainBlackCheckResult

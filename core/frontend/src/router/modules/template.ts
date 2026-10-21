@@ -16,10 +16,5 @@ export default {
 			name: 'template',
 			component: () => import('@/views/template/index.vue'),
 		},
-		{
-			path: 'ai-template/:chatId',
-			name: 'ai-template',
-			component: () => import('@/views/template/pages/AITemplate/index.vue'),
-		},
 	],
 } as RouteRecordRaw

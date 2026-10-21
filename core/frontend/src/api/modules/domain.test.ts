@@ -27,8 +27,6 @@ import {
   freshDnsRecord,
   applyCert,
   setDefaultDomain,
-  initAiConfiguration,
-  checkAiConfiguration,
   checkDomainBlacklist,
   getCheckLogs,
 } from './domain'
@@ -55,7 +53,6 @@ describe('domain API', () => {
       quota: 100,
       mailboxes: 10,
       email: 'a@test.com',
-      urls: [],
       hostname: 'mail.test.com',
     }
     createDomain(params)
@@ -73,7 +70,6 @@ describe('domain API', () => {
       quota: 200,
       mailboxes: 20,
       email: 'b@test.com',
-      urls: [],
       hostname: 'mail.test.com',
     }
     updateDomain(params)
@@ -111,17 +107,6 @@ describe('domain API', () => {
   it('setDefaultDomain calls POST /domains/set_default_domain', () => {
     setDefaultDomain({ domain: 'test.com' })
     expect(mockPost).toHaveBeenCalledWith('/domains/set_default_domain', { domain: 'test.com' }, expect.any(Object))
-  })
-
-  it('initAiConfiguration calls POST /askai/project/create', () => {
-    const params = { domain: 'test.com', urls: ['https://example.com'] }
-    initAiConfiguration(params)
-    expect(mockPost).toHaveBeenCalledWith('/askai/project/create', params, expect.any(Object))
-  })
-
-  it('checkAiConfiguration calls POST /askai/supplier/status', () => {
-    checkAiConfiguration()
-    expect(mockPost).toHaveBeenCalledWith('/askai/supplier/status')
   })
 
   it('checkDomainBlacklist calls POST /domain_blocklist/check', () => {

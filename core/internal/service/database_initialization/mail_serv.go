@@ -18,8 +18,6 @@ func init() {
 				rate_limit INT DEFAULT 12,                               -- How many emails per second
 				create_time INT NOT NULL default 0,
 				active SMALLINT NOT NULL DEFAULT 1,
-				urls TEXT[] NOT NULL DEFAULT '{}'::TEXT[],
-				hasbrandinfo SMALLINT NOT NULL DEFAULT 0,
 				current_usage BIGINT NOT NULL DEFAULT 0,	
 				PRIMARY KEY (domain)
 			)`,
@@ -120,8 +118,6 @@ func init() {
 		}
 
 		// domain
-		_ = AddColumnIfNotExists("domain", "urls", "TEXT[]", "'{}'::TEXT[]", false)
-		_ = AddColumnIfNotExists("domain", "hasbrandinfo", "SMALLINT", "0", false)
 		_ = AddColumnIfNotExists("domain", "current_usage", "BIGINT", "0", true)
 
 

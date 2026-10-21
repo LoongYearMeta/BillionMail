@@ -2,7 +2,6 @@ package timers
 
 import (
 	"billionmail-core/internal/service/abnormal_recipient"
-	"billionmail-core/internal/service/askai"
 	"billionmail-core/internal/service/batch_mail"
 	"billionmail-core/internal/service/domains"
 	"billionmail-core/internal/service/fail2ban"
@@ -127,9 +126,6 @@ func Start(ctx context.Context) (err error) {
 
 	// fail2ban access logs detection
 	gtimer.AddOnce(800*time.Millisecond, fail2ban.NewAccessLogDetection().Start)
-
-	// askai timers
-	gtimer.Add(5*time.Second, askai.AutoGetProjectInfo)
 
 	gtimer.Add(30*time.Minute, func() {
 		abnormal_recipient.AbnormalRecipientAutoStat(context.Background())

@@ -76,7 +76,6 @@ const columns = ref<DataTableColumns<MailDomain>>([
 		render: row => {
 			return (
 				<div class="inline-flex items-center">
-					{row.hasbrandinfo == 1 && <i class="i-domain:brand-info w-4 h-4 mr-4px"></i>}
 					<NButton text type="primary" onClick={() => handleEdit(row)}>
 						{row.domain}
 					</NButton>

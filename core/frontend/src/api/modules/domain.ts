@@ -16,9 +16,7 @@ type DomainParams = {
 	quota: number
 	mailboxes: number
 	email: string
-	urls: string[]
 	hostname: string
-	hasbrandinfo?: number
 }
 
 export const createDomain = (params: DomainParams) => {
@@ -86,19 +84,6 @@ export const setDefaultDomain = (params: { domain: string }) => {
 			successMessage: true,
 		},
 	})
-}
-
-export const initAiConfiguration = (params: { domain: string; urls: string[] }) => {
-	return instance.post('/askai/project/create', params, {
-		fetchOptions: {
-			loading: t('domain.api.loading.settingBrandInfo'),
-			successMessage: true,
-		},
-	})
-}
-
-export const checkAiConfiguration = () => {
-	return instance.post('/askai/supplier/status')
 }
 
 export const checkDomainBlacklist = (params: { a_record: string }) => {

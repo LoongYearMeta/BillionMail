@@ -23,7 +23,6 @@ describe('GlobalStore', () => {
 
   it('has correct initial state', () => {
     const store = useGlobalStore()
-    expect(store.domainSource).toBe('')
     expect(store.lang).toBe('en')
     expect(store.langList).toEqual([])
     expect(store.isCollapse).toBe(false)

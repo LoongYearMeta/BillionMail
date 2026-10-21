@@ -49,12 +49,6 @@ func (c *ControllerV1) UpdateDomain(ctx context.Context, req *v1.UpdateDomainReq
 
 	updateData["active"] = req.Active
 
-	// URLs
-	if len(req.Urls) > 0 {
-		updateData["urls"] = req.Urls
-	}
-	updateData["hasbrandinfo"] = req.HasBrandInfo
-
 	if err = domains.Update(ctx, updateData); err != nil {
 		return nil, err
 	}

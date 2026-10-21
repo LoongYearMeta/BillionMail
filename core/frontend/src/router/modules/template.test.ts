@@ -20,17 +20,12 @@ describe('template route', () => {
     })
   })
 
-  it('has two children', () => {
-    expect(route.children).toHaveLength(2)
+  it('has one child', () => {
+    expect(route.children).toHaveLength(1)
   })
 
   it('first child is template list', () => {
     expect(route.children![0].path).toBe('/template')
     expect(route.children![0].name).toBe('template')
-  })
-
-  it('second child is ai-template with chatId param', () => {
-    expect(route.children![1].path).toBe('ai-template/:chatId')
-    expect(route.children![1].name).toBe('ai-template')
   })
 })

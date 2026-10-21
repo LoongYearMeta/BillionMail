@@ -47,7 +47,6 @@ import TemplateForm from './components/TemplateForm.vue'
 import TemplatePreview from './components/TemplatePreview.vue'
 import CreateTplModal from './components/CreateTplModal.vue'
 
-const router = useRouter()
 
 const { t } = useI18n()
 const createTemplateModalRef = ref()
@@ -224,13 +223,10 @@ const confirmUpdateTemplateName = async (row:Template)=>{
 	row.isEdit = false
 }
 // Handle edit
+// Templates made by the removed AI generator are edited as HTML
 const handleEdit = (row: Template) => {
-	if (row.add_type == 2 && row.chat_id) {
-		router.push({ name: "ai-template", params: { chatId: row.chat_id } })
-	} else {
-		formModalApi.setState({ isEdit: true, row })
-		formModalApi.open()
-	}
+	formModalApi.setState({ isEdit: true, row: row.add_type == 2 ? { ...row, add_type: 0 } : row })
+	formModalApi.open()
 }
 
 const [PreviewModal, previewModalApi] = useModal({
